@@ -1,0 +1,2728 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PocketBac — Boutique de Geles Antibacteriales</title>
+
+  <!-- Tipografías Google Fonts: Quicksand (marca y títulos) y Plus Jakarta Sans (interfaz) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Configuración de Paleta Rosa Pastel (#FFF0F5, #FADADD, #F8C8DC, #F4A6C1, #E77A9E) y Blanco Puro -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            pastel: {
+              blush: '#FFF0F5',
+              soft: '#FADADD',
+              rose: '#F8C8DC',
+              petal: '#F4A6C1',
+              berry: '#E77A9E',
+              deep: '#9B375B',
+              ink: '#5E223A',
+            }
+          },
+          fontFamily: {
+            display: ['Quicksand', 'sans-serif'],
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          boxShadow: {
+            'boutique': '0 20px 45px -12px rgba(231, 122, 158, 0.28)',
+            'card': '0 8px 24px -6px rgba(231, 122, 158, 0.16)',
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #FFF0F5;
+      color: #5E223A;
+    }
+
+    h1, h2, h3, h4, .font-brand {
+      font-family: 'Quicksand', sans-serif;
+    }
+
+    /* Fondo boutique con degradados radiales suaves en rosa pastel */
+    .bg-pocketbac-canvas {
+      background-color: #FFF0F5;
+      background-image:
+        radial-gradient(circle at 12% 16%, rgba(250, 218, 221, 0.92) 0%, transparent 42%),
+        radial-gradient(circle at 88% 12%, rgba(248, 200, 220, 0.78) 0%, transparent 38%),
+        radial-gradient(circle at 50% 92%, rgba(244, 166, 193, 0.35) 0%, transparent 52%);
+    }
+
+    @keyframes modalAppear {
+      from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.97);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .animate-modal {
+      animation: modalAppear 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Barra de desplazamiento personalizada */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #FFF0F5;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #F8C8DC;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #F4A6C1;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-pocketbac-canvas antialiased selection:bg-pastel-rose selection:text-pastel-deep">
+
+  <!-- ===================================================================== -->
+  <!-- 1. PANTALLA DE INICIO / AUTENTICACIÓN (DUEÑO Y VISITANTE)             -->
+  <!-- ===================================================================== -->
+  <section id="auth-view" class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6">
+    <div class="w-full max-w-md">
+
+      <!-- Barra superior discreta: Estado de Firebase y Botón Configurar -->
+      <div class="flex justify-center mb-5">
+        <button
+          type="button"
+          onclick="openFirebaseModal()"
+          title="Configurar conexión con Firebase"
+          class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/95 border border-pastel-rose shadow-sm hover:border-pastel-berry transition text-xs font-semibold text-pastel-deep"
+        >
+          <span id="auth-status-dot" class="w-2 h-2 rounded-full bg-pastel-petal"></span>
+          <span id="auth-status-text">Modo Local activo</span>
+          <span class="text-pastel-berry underline ml-1">Configurar Firebase</span>
+        </button>
+      </div>
+
+      <!-- Logotipo Artesanal SVG PocketBac -->
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-white shadow-boutique border-2 border-pastel-soft mb-3.5 p-3 transition-transform duration-300 hover:scale-105">
+          <svg viewBox="0 0 100 100" class="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Logotipo PocketBac">
+            <circle cx="50" cy="52" r="44" fill="#FFF0F5" />
+            <!-- Aro / Correa superior del holder -->
+            <path d="M43 22V15C43 11.134 46.134 8 50 8C53.866 8 57 11.134 57 15V22" stroke="#E77A9E" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="50" cy="14" r="2.2" fill="#FFFFFF"/>
+            <!-- Tapa flip-top blanca -->
+            <rect x="39" y="21" width="22" height="9" rx="4.5" fill="#FFFFFF" stroke="#F4A6C1" stroke-width="2.2"/>
+            <!-- Funda / Holder rosa pastel -->
+            <rect x="28" y="29" width="44" height="56" rx="18" fill="#FADADD" stroke="#F4A6C1" stroke-width="2.5"/>
+            <!-- Cuerpo interior del frasco -->
+            <rect x="33" y="34" width="34" height="46" rx="14" fill="#F8C8DC" />
+            <!-- Etiqueta central en blanco puro -->
+            <rect x="37" y="42" width="26" height="30" rx="10" fill="#FFFFFF" stroke="#FADADD" stroke-width="1.5"/>
+            <!-- Gota purificadora rosa -->
+            <path d="M50 48C50 48 43 56.2 43 60.5C43 64.366 46.134 67.5 50 67.5C53.866 67.5 57 64.366 57 60.5C57 56.2 50 48 50 48Z" fill="#E77A9E"/>
+            <path d="M47 59.5C47 61.2 48 62.8 49.5 63.5" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/>
+            <!-- Destellos boutique -->
+            <path d="M78 27L79.5 30.5L83 32L79.5 33.5L78 37L76.5 33.5L73 32L76.5 30.5L78 27Z" fill="#E77A9E"/>
+            <path d="M21 64L22 66.5L24.5 67.5L22 68.5L21 71L20 68.5L17.5 67.5L20 66.5L21 64Z" fill="#F4A6C1"/>
+          </svg>
+        </div>
+        <h1 class="font-brand text-3xl sm:text-4xl font-bold tracking-tight text-pastel-deep">
+          Pocket<span class="text-pastel-berry">Bac</span>
+        </h1>
+        <p class="text-sm text-pastel-berry font-medium mt-1">
+          Boutique de Geles Antibacteriales &amp; Aromáticos
+        </p>
+      </div>
+
+      <!-- Tarjeta Principal en Blanco Puro -->
+      <div class="bg-white rounded-3xl shadow-boutique border-2 border-pastel-soft overflow-hidden">
+
+        <!-- Pestañas: Iniciar Sesión / Crear Cuenta -->
+        <div class="grid grid-cols-2 bg-pastel-blush p-1.5 m-4 rounded-2xl border border-pastel-soft">
+          <button
+            type="button"
+            id="tab-login"
+            onclick="switchAuthTab('login')"
+            class="py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200 bg-white text-pastel-deep shadow-sm"
+          >
+            Iniciar Sesión
+          </button>
+          <button
+            type="button"
+            id="tab-register"
+            onclick="switchAuthTab('register')"
+            class="py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200 text-pastel-berry hover:text-pastel-deep"
+          >
+            Crear Cuenta
+          </button>
+        </div>
+
+        <!-- Alerta de validación / errores -->
+        <div id="auth-alert" class="hidden mx-6 mb-3 px-4 py-3 rounded-2xl text-xs sm:text-sm font-medium bg-pastel-blush border border-pastel-rose text-pastel-deep flex items-start gap-2">
+          <svg class="w-4 h-4 text-pastel-berry shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span id="auth-alert-text"></span>
+        </div>
+
+        <!-- Formulario: Iniciar Sesión -->
+        <form id="login-form" onsubmit="handleLogin(event)" class="px-6 pb-6 pt-1 space-y-4">
+          <div>
+            <label for="login-email" class="block text-xs font-bold uppercase tracking-wider text-pastel-berry mb-1.5">
+              Correo Electrónico
+            </label>
+            <input
+              type="email"
+              id="login-email"
+              required
+              placeholder="tu.correo@pocketbac.com"
+              class="w-full px-4 py-3 rounded-2xl bg-pastel-blush/60 border border-pastel-soft text-sm text-pastel-ink placeholder-pastel-petal focus:outline-none focus:bg-white focus:border-pastel-berry focus:ring-2 focus:ring-pastel-rose/50 transition"
+            />
+          </div>
+
+          <div>
+            <label for="login-password" class="block text-xs font-bold uppercase tracking-wider text-pastel-berry mb-1.5">
+              Contraseña
+            </label>
+            <input
+              type="password"
+              id="login-password"
+              required
+              placeholder="••••••••"
+              class="w-full px-4 py-3 rounded-2xl bg-pastel-blush/60 border border-pastel-soft text-sm text-pastel-ink placeholder-pastel-petal focus:outline-none focus:bg-white focus:border-pastel-berry focus:ring-2 focus:ring-pastel-rose/50 transition"
+            />
+          </div>
+
+          <button
+            type="submit"
+            id="login-submit-btn"
+            class="w-full py-3.5 px-6 rounded-2xl bg-pastel-rose hover:bg-pastel-berry text-pastel-deep hover:text-white font-brand font-bold text-base shadow-card transition-all duration-200 active:scale-[0.99]"
+          >
+            Iniciar Sesión
+          </button>
+        </form>
+
+        <!-- Formulario: Crear Cuenta (Con selector visual de Tipo de Cuenta) -->
+        <form id="register-form" onsubmit="handleRegister(event)" class="hidden px-6 pb-6 pt-1 space-y-4">
+          <div>
+            <label for="reg-name" class="block text-xs font-bold uppercase tracking-wider text-pastel-berry mb-1.5">
+              Nombre completo / usuario
+            </label>
+            <input
+              type="text"
+              id="reg-name"
+              required
+              placeholder="Ej. Valeria Mendoza"
+              class="w-full px-4 py-3 rounded-2xl bg-pastel-blush/60 border border-pastel-soft text-sm text-pastel-ink placeholder-pastel-petal focus:outline-none focus:bg-white focus:border-pastel-berry focus:ring-2 focus:ring-pastel-rose/50 transition"
+            />
+          </div>
+
+          <div>
+            <label for="reg-email" class="block text-xs font-bold uppercase tracking-wider text-pastel-berry mb-1.5">
+              Correo Electrónico
+            </label>
+            <input
+              type="email"
+              id="reg-email"
+              required
+              placeholder="valeria@pocketbac.com"
+              class="w-full px-4 py-3 rounded-2xl bg-pastel-blush/60 border border-pastel-soft text-sm text-pastel-ink placeholder-pastel-petal focus:outline-none focus:bg-white focus:border-pastel-berry focus:ring-2 focus:ring-pastel-rose/50 transition"
+            />
+          </div>
+
+          <div>
+            <label for="reg-password" class="block text-xs font-bold uppercase tracking-wider text-pastel-berry mb-1.5">
+              Contraseña
+            </label>
+            <input
+              type="password"
+              id="reg-password"
+              required
+              minlength="6"
+              placeholder="Mínimo 6 caracteres"
+              class="w-full px-4 py-3 rounded-2xl bg-pastel-blush/60 border border-pastel-soft text-sm text-pastel-ink placeholder-pastel-petal focus:outline-none focus:bg-white focus:border-pastel-berry focus:ring-2 focus:ring-pastel-rose/50 transition"
+            />
+          </div>
+
+          <!-- Selector Visual de Tipo de Cuenta: Visitante vs Dueño -->
+          <div>
+            <span class="block text-xs font-bold uppercase tracking-wider text-pastel-berry mb-2">
+              Tipo de Cuenta
+            </span>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <!-- Opción 1: Visitante -->
+              <label class="cursor-pointer relative">
+                <input
+                  type="radio"
+                  name="reg-role"
+                  value="visitante"
+                  checked
+                  onchange="updateRoleSelectorStyles()"
+                  class="sr-only"
+                />
+                <div id="role-card-visitante" class="h-full p-3.5 rounded-2xl border-2 border-pastel-berry bg-pastel-blush transition-all duration-200">
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-base">🛍️</span>
+                    <span id="role-check-visitante" class="w-4 h-4 rounded-full bg-pastel-berry text-white flex items-center justify-center text-[10px] font-bold">✓</span>
+                  </div>
+                  <p class="font-brand font-bold text-sm text-pastel-deep">Visitante</p>
+                  <p class="text-[11px] text-pastel-berry leading-snug mt-0.5">
+                    Explora la tienda, revisa detalles y envía pedidos al dueño.
+                  </p>
+                </div>
+              </label>
+
+              <!-- Opción 2: Dueño -->
+              <label class="cursor-pointer relative">
+                <input
+                  type="radio"
+                  name="reg-role"
+                  value="dueno"
+                  onchange="updateRoleSelectorStyles()"
+                  class="sr-only"
+                />
+                <div id="role-card-dueno" class="h-full p-3.5 rounded-2xl border-2 border-pastel-soft bg-white hover:bg-pastel-blush/40 transition-all duration-200">
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-base">👑</span>
+                    <span id="role-check-dueno" class="w-4 h-4 rounded-full border border-pastel-rose bg-white text-transparent flex items-center justify-center text-[10px] font-bold">✓</span>
+                  </div>
+                  <p class="font-brand font-bold text-sm text-pastel-deep">Dueño</p>
+                  <p class="text-[11px] text-pastel-berry leading-snug mt-0.5">
+                    Agrega, edita o elimina geles y gestiona pedidos recibidos.
+                  </p>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            id="register-submit-btn"
+            class="w-full py-3.5 px-6 rounded-2xl bg-pastel-rose hover:bg-pastel-berry text-pastel-deep hover:text-white font-brand font-bold text-base shadow-card transition-all duration-200 active:scale-[0.99]"
+          >
+            Crear Cuenta
+          </button>
+        </form>
+
+        <!-- Botones de Acceso Rápido de Prueba -->
+        <div class="bg-pastel-blush/90 border-t border-pastel-soft px-6 py-4">
+          <div class="flex items-center justify-center gap-2 text-xs text-pastel-berry mb-3">
+            <span class="h-px flex-1 bg-pastel-rose"></span>
+            <span>Acceso rápido de prueba</span>
+            <span class="h-px flex-1 bg-pastel-rose"></span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <button
+              type="button"
+              onclick="quickEnter('dueno')"
+              class="py-2.5 px-3.5 rounded-2xl bg-white hover:bg-pastel-soft/60 border border-pastel-rose text-pastel-deep font-brand font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all duration-200"
+            >
+              <span>👑</span>
+              <span>Entrar rápido como Dueño</span>
+            </button>
+
+            <button
+              type="button"
+              onclick="quickEnter('visitante')"
+              class="py-2.5 px-3.5 rounded-2xl bg-white hover:bg-pastel-soft/60 border border-pastel-rose text-pastel-deep font-brand font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all duration-200"
+            >
+              <span>🛍️</span>
+              <span>Entrar rápido como Visitante</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- 2. VISTA PRINCIPAL DE LA TIENDA BOUTIQUE POCKETBAC                    -->
+  <!-- ===================================================================== -->
+  <section id="store-view" class="hidden min-h-screen flex flex-col">
+
+    <!-- Barra Superior Blanca con Acentos Rosa Pastel -->
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-pastel-soft shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+
+          <!-- Logotipo y Marca PocketBac -->
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-2xl bg-pastel-blush border border-pastel-soft p-1.5 flex items-center justify-center shrink-0">
+              <svg viewBox="0 0 100 100" class="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M43 22V15C43 11.134 46.134 8 50 8C53.866 8 57 11.134 57 15V22" stroke="#E77A9E" stroke-width="3.5" stroke-linecap="round"/>
+                <rect x="39" y="21" width="22" height="9" rx="4.5" fill="#FFFFFF" stroke="#F4A6C1" stroke-width="2.5"/>
+                <rect x="28" y="29" width="44" height="56" rx="18" fill="#FADADD" stroke="#F4A6C1" stroke-width="2.5"/>
+                <rect x="37" y="42" width="26" height="30" rx="10" fill="#FFFFFF"/>
+                <path d="M50 48C50 48 43 56.2 43 60.5C43 64.366 46.134 67.5 50 67.5C53.866 67.5 57 64.366 57 60.5C57 56.2 50 48 50 48Z" fill="#E77A9E"/>
+              </svg>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-brand text-xl sm:text-2xl font-bold text-pastel-deep leading-none">
+                  Pocket<span class="text-pastel-berry">Bac</span>
+                </span>
+                <!-- Indicador Firebase / Local -->
+                <button
+                  type="button"
+                  onclick="openFirebaseModal()"
+                  title="Configurar conexión con Firebase"
+                  class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-pastel-blush border border-pastel-rose text-[11px] font-semibold text-pastel-deep hover:bg-pastel-soft transition"
+                >
+                  <span id="nav-status-dot" class="w-1.5 h-1.5 rounded-full bg-pastel-petal"></span>
+                  <span id="nav-status-text">Modo Local</span>
+                </button>
+              </div>
+              <span class="text-[11px] uppercase tracking-widest text-pastel-berry font-semibold block mt-0.5">
+                Boutique de Geles Antibacteriales
+              </span>
+            </div>
+          </div>
+
+          <!-- Navegación Exclusiva de Pestañas para DUEÑO -->
+          <nav id="owner-nav-tabs" class="hidden order-3 lg:order-2 flex items-center bg-pastel-blush p-1 rounded-full border border-pastel-soft">
+            <button
+              type="button"
+              id="nav-tab-catalog"
+              onclick="switchOwnerSection('catalog')"
+              class="px-4 py-2 rounded-full text-xs sm:text-sm font-brand font-bold transition-all duration-200 bg-white text-pastel-deep shadow-sm flex items-center gap-1.5"
+            >
+              <span>🧴</span>
+              <span>Catálogo de Geles</span>
+            </button>
+            <button
+              type="button"
+              id="nav-tab-orders"
+              onclick="switchOwnerSection('orders')"
+              class="px-4 py-2 rounded-full text-xs sm:text-sm font-brand font-bold transition-all duration-200 text-pastel-berry hover:text-pastel-deep flex items-center gap-1.5"
+            >
+              <span>📬</span>
+              <span>Pedidos de Visitantes</span>
+              <span
+                id="pending-orders-badge"
+                class="ml-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-pastel-berry text-white transition"
+              >
+                0
+              </span>
+            </button>
+          </nav>
+
+          <!-- Perfil de Usuario con Insignia de Rol + Botones de Acción -->
+          <div class="order-2 lg:order-3 flex items-center gap-2 sm:gap-2.5">
+            <!-- Insignia de Usuario y Rol -->
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-pastel-blush border border-pastel-rose">
+              <span id="user-role-badge" class="px-2 py-0.5 rounded-full bg-white text-[11px] font-bold text-pastel-deep shadow-sm">
+                🛍️ Visitante
+              </span>
+              <span id="user-display-name" class="text-xs font-bold text-pastel-deep truncate max-w-[110px] sm:max-w-[140px]">
+                Usuario
+              </span>
+            </div>
+
+            <!-- Botón Configurar Firebase -->
+            <button
+              type="button"
+              onclick="openFirebaseModal()"
+              title="Configurar Firebase"
+              class="p-2.5 rounded-full bg-pastel-blush hover:bg-pastel-soft border border-pastel-rose text-pastel-berry hover:text-pastel-deep transition"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+              </svg>
+            </button>
+
+            <!-- Botón Cerrar Sesión -->
+            <button
+              type="button"
+              onclick="handleLogout()"
+              title="Cerrar sesión"
+              aria-label="Cerrar sesión"
+              class="py-2 px-3 rounded-full bg-white hover:bg-pastel-blush text-pastel-berry hover:text-pastel-deep border border-pastel-soft text-xs font-semibold flex items-center gap-1.5 transition"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              <span class="hidden sm:inline">Salir</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </header>
+
+    <!-- =================================================================== -->
+    <!-- SECCIÓN A: CATÁLOGO DE GELES (Visible para Visitantes y Dueños)     -->
+    <!-- =================================================================== -->
+    <main id="catalog-section" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+      <!-- Encabezado de Vitrina + Buscador + Botón Añadir (Solo Dueño) -->
+      <div class="bg-white rounded-3xl p-6 sm:p-7 mb-8 border border-pastel-soft shadow-card">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+          <div>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pastel-blush border border-pastel-rose text-pastel-berry text-xs font-semibold mb-2">
+              <span class="w-2 h-2 rounded-full bg-pastel-berry"></span>
+              Vitrina Oficial PocketBac
+            </span>
+            <h2 class="font-brand text-2xl sm:text-3xl font-bold text-pastel-deep">
+              Catálogo de Geles Antibacteriales
+            </h2>
+            <p id="catalog-subtitle" class="text-sm text-pastel-berry mt-1">
+              Haz clic sobre cualquier gel para ver su ficha completa con aroma, precio orientativo e ingredientes.
+            </p>
+          </div>
+
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <!-- Buscador por Nombre o Aroma -->
+            <div class="relative w-full sm:w-72">
+              <span class="absolute inset-y-0 left-3.5 flex items-center pointer-events-none text-pastel-berry">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </span>
+              <input
+                type="text"
+                id="search-input"
+                oninput="handleSearch(this.value)"
+                placeholder="Buscar por nombre o aroma..."
+                class="w-full pl-10 pr-9 py-2.5 rounded-full bg-pastel-blush/80 border border-pastel-soft text-sm text-pastel-ink placeholder-pastel-petal focus:outline-none focus:bg-white focus:border-pastel-berry focus:ring-2 focus:ring-pastel-rose/40 transition"
+              />
+              <button
+                type="button"
+                id="clear-search-btn"
+                onclick="clearSearch()"
+                aria-label="Limpiar búsqueda"
+                class="hidden absolute inset-y-0 right-3 flex items-center text-pastel-berry hover:text-pastel-deep"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <!-- Botón Añadir Nuevo Gel (SOLO VISIBLE PARA DUEÑO) -->
+            <button
+              type="button"
+              id="owner-add-gel-btn"
+              onclick="openFormModal()"
+              class="hidden py-2.5 px-5 rounded-full bg-pastel-rose hover:bg-pastel-berry text-pastel-deep hover:text-white font-brand font-bold text-sm shadow-card transition-all duration-200 flex items-center justify-center gap-1.5 shrink-0"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+              </svg>
+              <span>+ Añadir Nuevo Gel</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estado Vacío Inicial (0 productos registrados) -->
+      <div id="empty-catalog-state" class="bg-white rounded-3xl p-10 sm:p-16 text-center border-2 border-dashed border-pastel-rose shadow-boutique max-w-2xl mx-auto my-6">
+        <div class="w-20 h-20 rounded-full bg-pastel-blush border-2 border-pastel-soft text-pastel-berry mx-auto flex items-center justify-center mb-5 shadow-sm">
+          <svg viewBox="0 0 100 100" class="w-12 h-12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M43 22V15C43 11.134 46.134 8 50 8C53.866 8 57 11.134 57 15V22" stroke="#E77A9E" stroke-width="4" stroke-linecap="round"/>
+            <rect x="39" y="21" width="22" height="9" rx="4.5" fill="#FFFFFF" stroke="#F4A6C1" stroke-width="3"/>
+            <rect x="28" y="29" width="44" height="56" rx="18" fill="#FADADD" stroke="#F4A6C1" stroke-width="3"/>
+            <path d="M50 47C50 47 43 55.2 43 59.5C43 63.366 46.134 66.5 50 66.5C53.866 66.5 57 63.366 57 59.5C57 55.2 50 47 50 47Z" fill="#E77A9E"/>
+          </svg>
+        </div>
+        <h3 id="empty-catalog-title" class="font-brand text-2xl font-bold text-pastel-deep">
+          Tu boutique PocketBac está lista para estrenarse
+        </h3>
+        <p id="empty-catalog-desc" class="text-sm sm:text-base text-pastel-berry mt-2 mb-7 max-w-md mx-auto leading-relaxed">
+          Aún no hay geles registrados en la vitrina. Comienza agregando tu primer gel antibacterial con su foto, aroma, precio orientativo e ingredientes.
+        </p>
+        <button
+          type="button"
+          id="empty-catalog-add-btn"
+          onclick="openFormModal()"
+          class="inline-flex items-center gap-2 py-3.5 px-7 rounded-full bg-pastel-rose hover:bg-pastel-berry text-pastel-deep hover:text-white font-brand font-bold text-base shadow-boutique transition-all duration-200 transform hover:-translate-y-0.5"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>Añadir Primer Gel</span>
+        </button>
+      </div>
+
+      <!-- Estado Vacío por Búsqueda sin coincidencias -->
+      <div id="empty-search-state" class="hidden bg-white rounded-3xl p-12 text-center border border-pastel-soft shadow-card my-6">
+        <div class="w-16 h-16 rounded-full bg-pastel-blush text-pastel-berry mx-auto flex items-center justify-center mb-4">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        <h3 class="font-brand text-xl font-bold text-pastel-deep">No encontramos geles con ese nombre o aroma</h3>
+        <p class="text-sm text-pastel-berry mt-1 mb-5">Prueba con otra palabra clave o limpia el buscador para ver todos los productos.</p>
+        <button
+          type="button"
+          onclick="clearSearch()"
+          class="px-5 py-2.5 rounded-full bg-pastel-rose hover:bg-pastel-berry text-pastel-deep hover:text-white font-brand font-bold text-sm transition"
+        >
+          Mostrar todos los geles
+        </button>
+      </div>
+
+      <!-- Cuadrícula Responsiva de Geles -->
+      <div id="gels-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <!-- Tarjetas generadas dinámicamente -->
+      </div>
+
+    </main>
+
+    <!-- =================================================================== -->
+    <!-- SECCIÓN B: PEDIDOS DE VISITANTES (EXCLUSIVA PARA CUENTA DUEÑO)      -->
+    <!-- =================================================================== -->
+    <main id="orders-section" class="hidden flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+      <!-- Cabecera y Estadísticas Rápidas -->
+      <div class="bg-white rounded-3xl p-6 sm:p-7 mb-6 border border-pastel-soft shadow-card">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pastel-blush border border-pastel-rose text-pastel-berry text-xs font-semibold mb-2">
+              <span>👑</span>
+              <span>Bandeja Exclusiva del Dueño</span>
+            </span>
+            <h2 class="font-brand text-2xl sm:text-3xl font-bold text-pastel-deep">
+              Pedidos de Visitantes
+            </h2>
+            <p class="text-sm text-pastel-berry mt-1">
+              Consulta qué cuentas visitantes han solicitado geles, las cantidades y sus mensajes personalizados.
+            </p>
+          </div>
+
+          <!-- Estadísticas Rápidas -->
+          <div class="grid grid-cols-3 gap-3 shrink-0">
+            <div class="px-4 py-3 rounded-2xl bg-pastel-blush border border-pastel-soft text-center min-w-[92px]">
+              <span class="block text-[11px] uppercase tracking-wider font-bold text-pastel-berry">Total</span>
+              <span id="stat-orders-total" class="font-brand text-2xl font-bold text-pastel-deep">0</span>
+            </div>
+            <div class="px-4 py-3 rounded-2xl bg-pastel-soft/60 border border-pastel-rose text-center min-w-[92px]">
+              <span class="block text-[11px] uppercase tracking-wider font-bold text-pastel-berry">Pendientes</span>
+              <span id="stat-orders-pending" class="font-brand text-2xl font-bold text-pastel-deep">0</span>
+            </div>
+            <div class="px-4 py-3 rounded-2xl bg-emerald-50/80 border border-emerald-200 text-center min-w-[92px]">
+              <span class="block text-[11px] uppercase tracking-wider font-bold text-emerald-700">Atendidos</span>
+              <span id="stat-orders-attended" class="font-brand text-2xl font-bold text-emerald-800">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filtros por Estado -->
+        <div class="mt-6 pt-5 border-t border-pastel-blush flex flex-wrap items-center gap-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-pastel-berry mr-1">Filtrar por estado:</span>
+          <button
+            type="button"
+            id="filter-orders-all"
+            onclick="setOrdersFilter('all')"
+            class="px-4 py-1.5 rounded-full text-xs font-bold bg-pastel-berry text-white shadow-sm transition"
+          >
+            Todos
+          </button>
+          <button
+            type="button"
+            id="filter-orders-pendiente"
+            onclick="setOrdersFilter('pendiente')"
+            class="px-4 py-1.5 rounded-full text-xs font-bold bg-pastel-blush text-pastel-deep hover:bg-pastel-soft border border-pastel-rose transition"
+          >
+            Pendientes
+          </button>
+          <button
+            type="button"
+            id="filter-orders-atendido"
+            onclick="setOrdersFilter('atendido')"
+            class="px-4 py-1.5 rounded-full text-xs font-bold bg-pastel-blush text-pastel-deep hover:bg-pastel-soft border border-pastel-rose transition"
+          >
+            Atendidos
+          </button>
+        </div>
+      </div>
+
+      <!-- Estado Vacío de Pedidos -->
+      <div id="empty-orders-state" class="bg-white rounded-3xl p-12 text-center border-2 border-dashed border-pastel-rose shadow-card max-w-xl mx-auto my-6">
+        <div class="w-16 h-16 rounded-full bg-pastel-blush border border-pastel-soft text-pastel-berry mx-auto flex items-center justify-center mb-4 text-2xl">
+          📬
+        </div>
+        <h3 id="empty-orders-title" class="font-brand text-xl font-bold text-pastel-deep">
+          Aún no hay pedidos de visitantes
+        </h3>
+        <p id="empty-orders-desc" class="text-sm text-pastel-berry mt-1.5 leading-relaxed">
+          Cuando una cuenta visitante entre a un gel y pulse <strong>"✨ Pedir este Gel"</strong>, su solicitud aparecerá aquí automáticamente con su nombre, correo y cantidad.
+        </p>
+      </div>
+
+      <!-- Listado de Tarjetas de Pedidos -->
+      <div id="orders-list" class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <!-- Tarjetas de pedidos renderizadas dinámicamente -->
+      </div>
+
+    </main>
+
+    <!-- Pie de Página -->
+    <footer class="bg-white border-t border-pastel-soft py-5 mt-12">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-pastel-berry">
+        <p class="font-brand font-bold text-pastel-deep">PocketBac — Boutique de Geles Antibacteriales &amp; Aromáticos</p>
+        <p id="footer-sync-info">Modo Local activo. Conecta Firebase para sincronización en tiempo real.</p>
+      </div>
+    </footer>
+
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- 3. MODAL DE DETALLES DEL GEL (Con botón "Pedir este Gel" p/ Visitante)-->
+  <!-- ===================================================================== -->
+  <div
+    id="detail-modal"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-pastel-ink/40 backdrop-blur-sm"
+    onclick="handleBackdropClick(event, 'detail-modal')"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="detail-title"
+  >
+    <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border-2 border-pastel-soft animate-modal relative">
+
+      <!-- Botón Cerrar (X) -->
+      <button
+        type="button"
+        onclick="closeDetailModal()"
+        aria-label="Cerrar ficha del gel"
+        class="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/95 hover:bg-pastel-blush text-pastel-berry hover:text-pastel-deep border border-pastel-soft flex items-center justify-center shadow-sm transition"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <div class="grid grid-cols-1 md:grid-cols-12">
+        <!-- Columna Imagen en Grande -->
+        <div class="md:col-span-5 bg-pastel-blush p-6 flex items-center justify-center border-b md:border-b-0 md:border-r border-pastel-soft min-h-[250px]">
+          <div id="detail-image-container" class="w-full max-w-[230px] aspect-square rounded-2xl bg-white p-3 shadow-card border border-pastel-soft flex items-center justify-center overflow-hidden">
+            <!-- Imagen grande inyectada -->
+          </div>
+        </div>
+
+        <!-- Columna Ficha Técnica + Acción según Rol -->
+        <div class="md:col-span-7 p-6 sm:p-7 flex flex-col justify-between">
+          <div>
+            <!-- Etiqueta de Aroma -->
+            <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-pastel-blush border border-pastel-rose text-pastel-berry text-xs font-semibold mb-3">
+              <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+              </svg>
+              <span>Aroma: <strong id="detail-aroma" class="text-pastel-deep"></strong></span>
+            </div>
+
+            <!-- Nombre del Gel -->
+            <h3 id="detail-title" class="font-brand text-2xl sm:text-3xl font-bold text-pastel-deep leading-tight">
+              Nombre del Gel
+            </h3>
+
+            <!-- Precio Orientativo -->
+            <div class="mt-3.5 inline-block px-4 py-2 rounded-2xl bg-pastel-soft/55 border border-pastel-rose">
+              <span class="text-[11px] uppercase tracking-wider text-pastel-berry font-bold block">Precio Orientativo</span>
+              <span id="detail-price" class="font-brand text-xl font-bold text-pastel-deep">$0.00 MXN</span>
+            </div>
+
+            <!-- Ingredientes -->
+            <div class="mt-5">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-pastel-berry mb-2 flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Ingredientes
+              </h4>
+              <div id="detail-ingredients" class="bg-pastel-blush/90 border border-pastel-soft rounded-2xl p-3.5 text-sm text-pastel-ink leading-relaxed">
+                <!-- Ingredientes -->
+              </div>
+            </div>
+          </div>
+
+          <!-- =============================================================== -->
+          <!-- ZONA EXCLUSIVA VISITANTE: FORMULARIO PARA PEDIR EL GEL          -->
+          <!-- =============================================================== -->
+          <div id="visitor-order-box" class="hidden mt-6 pt-5 border-t border-pastel-soft">
+            <div class="bg-pastel-blush/90 border-2 border-pastel-rose rounded-2xl p-4">
+              <div class="flex items-center justify-between mb-3">
+                <span class="font-brand font-bold text-sm text-pastel-deep flex items-center gap-1.5">
+                  <span>🛍️</span>
+                  <span>Solicitar este gel al dueño</span>
+                </span>
+                <span class="text-[11px] font-semibold text-pastel-berry">Envío directo</span>
+              </div>
+
+              <!-- Confirmación visual tras enviar el pedido -->
+              <div id="order-success-banner" class="hidden mb-3 p-3.5 rounded-2xl bg-white border-2 border-emerald-300 text-emerald-800 text-xs leading-relaxed shadow-sm">
+                <p class="font-brand font-bold text-sm text-emerald-900 flex items-center gap-1.5">
+                  <span>✅</span>
+                  <span>¡Pedido enviado al dueño!</span>
+                </p>
+                <p class="mt-1">
+                  Tu solicitud quedó registrada a nombre de <strong id="order-confirmed-user"></strong>. El dueño podrá verla en su bandeja de pedidos.
+                </p>
+              </div>
+
+              <form id="visitor-order-form" onsubmit="handlePlaceOrder(event)" class="space-y-3">
+                <div class="flex items-center justify-between gap-3 bg-white px-3.5 py-2 rounded-xl border border-pastel-soft">
+                  <label for="order-quantity" class="text-xs font-bold uppercase tracking-wider text-pastel-berry">
+                    Cantidad
+                  </label>
+                  <div class="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onclick="adjustOrderQuantity(-1)"
+                      aria-label="Disminuir cantidad"
+                      class="w-7 h-7 rounded-lg bg-pastel-blush hover:bg-pastel-rose text-pastel-deep font-bold flex items-center justify-center transition"
+                    >
+                      -
+                    </button>
+                    <input
+                      type="number"
+                      id="order-quantity"
+                      value="1"
+                      min="1"
+                      max="99"
+                      required
+                      class="w-12 text-center font-brand font-bold text-sm text-pastel-deep bg-transparent focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onclick="adjustOrderQuantity(1)"
+                      aria-label="Aumentar cantidad"
+                      class="w-7 h-7 rounded-lg bg-pastel-blush hover:bg-pastel-rose text-pastel-deep font-bold flex items-center justify-center transition"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <input
+                    type="text"
+                    id="order-note"
+                    maxlength="180"
+                    placeholder="Nota opcional para el dueño (ej. horario o detalle)..."
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-pastel-soft text-xs text-pastel-ink placeholder-pastel-petal focus:outline-none focus:border-pastel-berry"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  id="submit-order-btn"
+                  class="w-full py-3 px-5 rounded-2xl bg-pastel-berry hover:bg-pastel-deep text-white font-brand font-bold text-sm shadow-card transition-all duration-200 flex items-center justify-center gap-2 active:scale-[0.99]"
+                >
+                  <span>✨ Pedir este Gel</span>
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- =============================================================== -->
+          <!-- ZONA EXCLUSIVA DUEÑO: BOTÓN EDITAR Y CERRAR                     -->
+          <!-- =============================================================== -->
+          <div id="owner-detail-actions" class="hidden mt-6 pt-4 border-t border-pastel-soft flex flex-wrap items-center justify-between gap-3">
+            <button
+              type="button"
+              id="detail-edit-btn"
+              class="px-4 py-2.5 rounded-full bg-pastel-blush hover:bg-pastel-soft border border-pastel-rose text-pastel-deep font-brand font-bold text-xs sm:text-sm flex items-center gap-1.5 transition"
+            >
+              <svg class="w-4 h-4 text-pastel-berry" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              <span>Editar Gel</span>
+            </button>
+
+            <button
+              type="button"
+              onclick="closeDetailModal()"
+              class="px-6 py-2.5 rounded-full bg-pastel-rose hover:bg-pastel-berry text-pastel-deep hover:text-white font-brand font-bold text-xs sm:text-sm transition"
+            >
+              Cerrar
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 4. MODAL PARA AÑADIR / EDITAR GEL (SOLO DUEÑO)                        -->
+  <!-- ===================================================================== -->
+  <div
+    id="form-modal"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-pastel-ink/40 backdrop-blur-sm"
+    onclick="handleBackdropClick(event, 'form-modal')"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="form-modal-title"
+  >
+    <div class="bg-white rounded-3xl max-w-xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border-2 border-pastel-soft animate-modal">
+
+      <div class="px-6 py-4 bg-pastel-blush/90 border-b border-pastel-soft flex items-center justify-between sticky top-0 z-10 backdrop-blur-md">
+        <div>
+          <span class="text-[11px] uppercase tracking-widest text-pastel-berry font-bold">Gestión de Catálogo</span>
+          <h3 id="form-modal-title" class="font-brand text-xl font-bold text-pastel-deep">
+            Añadir Nuevo Gel
+          </h3>
+        </div>
+        <button
+          type="button"
+          onclick="closeFormModal()"
+          aria-label="Cerrar formulario"
+          class="w-9 h-9 rounded-full bg-white hover:bg-pastel-soft text-pastel-berry hover:text-pastel-deep border border-pastel-soft flex items-center justify-center transition"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form id="gel-form" onsubmit="handleSaveGel(event)" class="p-6 space-y-4">
+        <input type="hidden" id="gel-id" />
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="gel-name" class="block text-xs font-bold uppercase tracking-wider text-pastel-berry mb-1">
+              Nombre del Gel *
+            </label>
+            <input
+              type="text"
+              id="gel-name"
+              required
+              placeholder="Ej. PocketBac Fresa & Crema"
+              class="w-full px-4 py-2.5 rounded-2xl bg-pastel-blush/60 border border-pastel-soft text-sm text-pastel-ink focus:outline-none focus:bg-white focus:border-pastel-berry focus:ring-2 focus:ring-pastel-rose/40 transition"
+            />
+          </div>
+
+          <div>
+            <label for="gel-aroma" class="block text-xs font-bold uppercase tracking-wider text-pastel-berry mb-1">
+              Aroma *
+            </label>
+            <input
+              type="text"
+              id="gel-aroma"
+              required
+              placeholder="Ej. Fresas frescas con vainilla"
+              class="w-full px-4 py-2.5 rounded-2xl bg-pastel-blush/60 border border-pastel-soft text-sm text-pastel-ink focus:outline-none focus:bg-white focus:border-pastel-berry focus:ring-2 focus:ring-pastel-rose/40 transition"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label for="gel-price" class="block text-xs font-bold uppercase tracking-wider text-pastel-berry mb-1">
+            Precio Orientativo *
+          </label>
+          <input
+            type="text"
+            id="gel-price"
+            required
+            placeholder="Ej. 120 o $120.00 MXN"
+            class="w-full px-4 py-2.5 rounded-2xl bg-pastel-blush/60 border border-pastel-soft text-sm text-pastel-ink focus:outline-none focus:bg-white focus:border-pastel-berry focus:ring-2 focus:ring-pastel-rose/40 transition"
+          />
+        </div>
+
+        <div>
+          <label for="gel-ingredients" class="block text-xs font-bold uppercase tracking-wider text-pastel-berry mb-1">
+            Ingredientes *
+          </label>
+          <textarea
+            id="gel-ingredients"
+            rows="3"
+            required
+            placeholder="Ej. Alcohol etílico (70%), aloe vera orgánico, vitamina E, glicerina vegetal, esencia frutal..."
+            class="w-full px-4 py-2.5 rounded-2xl bg-pastel-blush/60 border border-pastel-soft text-sm text-pastel-ink focus:outline-none focus:bg-white focus:border-pastel-berry focus:ring-2 focus:ring-pastel-rose/40 transition"
+          ></textarea>
+        </div>
+
+        <!-- Imagen: Subir archivo o URL externa con vista previa instantánea -->
+        <div class="bg-pastel-blush/70 border border-pastel-soft rounded-2xl p-4">
+          <span class="block text-xs font-bold uppercase tracking-wider text-pastel-berry mb-2.5">
+            Imagen del Gel
+          </span>
+
+          <div class="flex flex-wrap gap-2 mb-3">
+            <button
+              type="button"
+              id="img-mode-file-btn"
+              onclick="switchImageInputMode('file')"
+              class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white text-pastel-deep border border-pastel-rose shadow-sm transition"
+            >
+              Subir desde dispositivo
+            </button>
+            <button
+              type="button"
+              id="img-mode-url-btn"
+              onclick="switchImageInputMode('url')"
+              class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-transparent text-pastel-berry hover:bg-white/70 border border-transparent transition"
+            >
+              Pegar URL externa
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+            <div class="sm:col-span-7">
+              <div id="img-input-file-group">
+                <label class="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-pastel-rose rounded-2xl cursor-pointer bg-white hover:bg-pastel-blush/60 transition px-3 text-center">
+                  <svg class="w-6 h-6 text-pastel-berry mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span class="text-xs font-semibold text-pastel-deep">Seleccionar foto</span>
+                  <span class="text-[11px] text-pastel-berry">PNG, JPG o WEBP</span>
+                  <input type="file" id="gel-image-file" accept="image/*" onchange="handleFileUpload(event)" class="hidden" />
+                </label>
+              </div>
+
+              <div id="img-input-url-group" class="hidden">
+                <input
+                  type="url"
+                  id="gel-image-url"
+                  oninput="handleUrlPreview(this.value)"
+                  placeholder="https://ejemplo.com/pocketbac.jpg"
+                  class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-pastel-soft text-xs text-pastel-ink focus:outline-none focus:border-pastel-berry"
+                />
+                <p class="text-[11px] text-pastel-berry mt-1.5">
+                  Pega el enlace directo de la imagen para previsualizarla al instante.
+                </p>
+              </div>
+            </div>
+
+            <div class="sm:col-span-5 flex flex-col items-center">
+              <div id="image-live-preview" class="w-28 h-28 rounded-2xl bg-white border border-pastel-soft shadow-sm p-2 flex items-center justify-center overflow-hidden">
+                <!-- Vista previa dinámica -->
+              </div>
+              <span class="text-[11px] font-medium text-pastel-berry mt-1">Vista previa</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-2 flex items-center justify-end gap-3">
+          <button
+            type="button"
+            onclick="closeFormModal()"
+            class="px-5 py-2.5 rounded-full bg-pastel-blush hover:bg-pastel-soft text-pastel-berry font-semibold text-sm transition"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            id="save-gel-btn"
+            class="px-6 py-2.5 rounded-full bg-pastel-rose hover:bg-pastel-berry text-pastel-deep hover:text-white font-brand font-bold text-sm shadow-card transition"
+          >
+            Guardar Gel
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 5. MODAL CONFIGURAR FIREBASE                                          -->
+  <!-- ===================================================================== -->
+  <div
+    id="firebase-modal"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-pastel-ink/40 backdrop-blur-sm"
+    onclick="handleBackdropClick(event, 'firebase-modal')"
+    role="dialog"
+    aria-modal="true"
+  >
+    <div class="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl border-2 border-pastel-soft animate-modal">
+      <div class="px-6 py-4 bg-pastel-blush border-b border-pastel-soft flex items-center justify-between">
+        <div>
+          <span class="text-[11px] uppercase tracking-widest text-pastel-berry font-bold">Nube &amp; Tiempo Real</span>
+          <h3 class="font-brand text-xl font-bold text-pastel-deep">Configurar Firebase</h3>
+        </div>
+        <button
+          type="button"
+          onclick="closeFirebaseModal()"
+          aria-label="Cerrar configuración Firebase"
+          class="w-9 h-9 rounded-full bg-white hover:bg-pastel-soft text-pastel-berry hover:text-pastel-deep border border-pastel-soft flex items-center justify-center transition"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form onsubmit="handleSaveFirebaseConfig(event)" class="p-6 space-y-3.5">
+        <p class="text-xs text-pastel-berry leading-relaxed bg-pastel-blush/80 p-3.5 rounded-2xl border border-pastel-soft">
+          Conecta tu proyecto de <strong>Firebase Console</strong> para sincronizar en tiempo real las colecciones <code class="font-mono text-pastel-deep font-semibold">pocketbac_usuarios</code>, <code class="font-mono text-pastel-deep font-semibold">pocketbac_geles</code> y <code class="font-mono text-pastel-deep font-semibold">pocketbac_pedidos</code>.
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-pastel-berry mb-1">apiKey *</label>
+            <input type="text" id="fb-apiKey" required placeholder="AIzaSy..." class="w-full px-3.5 py-2 rounded-xl bg-pastel-blush/50 border border-pastel-soft text-xs text-pastel-ink focus:outline-none focus:bg-white focus:border-pastel-berry" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-pastel-berry mb-1">authDomain *</label>
+            <input type="text" id="fb-authDomain" required placeholder="tu-app.firebaseapp.com" class="w-full px-3.5 py-2 rounded-xl bg-pastel-blush/50 border border-pastel-soft text-xs text-pastel-ink focus:outline-none focus:bg-white focus:border-pastel-berry" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-pastel-berry mb-1">projectId *</label>
+            <input type="text" id="fb-projectId" required placeholder="tu-proyecto-id" class="w-full px-3.5 py-2 rounded-xl bg-pastel-blush/50 border border-pastel-soft text-xs text-pastel-ink focus:outline-none focus:bg-white focus:border-pastel-berry" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-pastel-berry mb-1">storageBucket</label>
+            <input type="text" id="fb-storageBucket" placeholder="tu-app.appspot.com" class="w-full px-3.5 py-2 rounded-xl bg-pastel-blush/50 border border-pastel-soft text-xs text-pastel-ink focus:outline-none focus:bg-white focus:border-pastel-berry" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-pastel-berry mb-1">messagingSenderId</label>
+            <input type="text" id="fb-messagingSenderId" placeholder="1234567890" class="w-full px-3.5 py-2 rounded-xl bg-pastel-blush/50 border border-pastel-soft text-xs text-pastel-ink focus:outline-none focus:bg-white focus:border-pastel-berry" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-pastel-berry mb-1">appId *</label>
+            <input type="text" id="fb-appId" required placeholder="1:12345:web:abcdef" class="w-full px-3.5 py-2 rounded-xl bg-pastel-blush/50 border border-pastel-soft text-xs text-pastel-ink focus:outline-none focus:bg-white focus:border-pastel-berry" />
+          </div>
+        </div>
+
+        <div class="pt-3 flex flex-wrap items-center justify-between gap-2 border-t border-pastel-soft">
+          <button
+            type="button"
+            onclick="resetFirebaseToLocal()"
+            class="px-4 py-2 rounded-full bg-pastel-blush hover:bg-pastel-soft text-pastel-berry text-xs font-semibold transition"
+          >
+            Usar Modo Local
+          </button>
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              onclick="closeFirebaseModal()"
+              class="px-4 py-2 rounded-full bg-white border border-pastel-soft text-pastel-berry text-xs font-semibold hover:bg-pastel-blush transition"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="px-5 py-2 rounded-full bg-pastel-rose hover:bg-pastel-berry text-pastel-deep hover:text-white font-brand font-bold text-xs shadow-card transition"
+            >
+              Guardar y Conectar
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 6. MODAL DE CONFIRMACIÓN PERSONALIZADO                                -->
+  <!-- ===================================================================== -->
+  <div
+    id="confirm-modal"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-pastel-ink/40 backdrop-blur-sm"
+    onclick="handleBackdropClick(event, 'confirm-modal')"
+    role="dialog"
+    aria-modal="true"
+  >
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border-2 border-pastel-soft animate-modal text-center">
+      <div class="w-12 h-12 rounded-full bg-pastel-blush text-pastel-berry mx-auto flex items-center justify-center mb-3 border border-pastel-rose">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+      </div>
+      <h4 id="confirm-title" class="font-brand text-lg font-bold text-pastel-deep">¿Eliminar elemento?</h4>
+      <p id="confirm-message" class="text-sm text-pastel-berry mt-1.5 mb-5">Esta acción no se puede deshacer.</p>
+      <div class="flex items-center justify-center gap-3">
+        <button
+          type="button"
+          onclick="closeConfirmModal()"
+          class="flex-1 py-2.5 px-4 rounded-full bg-pastel-blush hover:bg-pastel-soft text-pastel-berry font-semibold text-sm transition"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          id="confirm-accept-btn"
+          class="flex-1 py-2.5 px-4 rounded-full bg-pastel-rose hover:bg-pastel-berry text-pastel-deep hover:text-white font-brand font-bold text-sm transition"
+        >
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 7. NOTIFICACIÓN FLOTANTE (TOAST)                                      -->
+  <!-- ===================================================================== -->
+  <div
+    id="toast"
+    class="pointer-events-none fixed bottom-5 right-5 z-50 transform translate-y-16 opacity-0 transition-all duration-300"
+  >
+    <div class="bg-white border-2 border-pastel-rose shadow-boutique rounded-2xl px-4 py-3 flex items-center gap-3 max-w-xs">
+      <span class="w-7 h-7 rounded-full bg-pastel-blush text-pastel-berry flex items-center justify-center shrink-0">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+        </svg>
+      </span>
+      <p id="toast-message" class="text-xs sm:text-sm font-semibold text-pastel-deep"></p>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 8. SCRIPT MODULAR: FIREBASE v10.12.2 + SISTEMA DUEÑO Y VISITANTE      -->
+  <!-- ===================================================================== -->
+  <script type="module">
+    import { initializeApp, getApps, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      updateDoc,
+      deleteDoc,
+      doc,
+      setDoc,
+      getDoc,
+      onSnapshot,
+      query,
+      orderBy
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // =========================================================================
+    // CONFIGURACIÓN POR DEFECTO DE FIREBASE
+    // Rellena estos valores si subes la página a GitHub Pages u otro hosting,
+    // o configúralos directamente desde el botón "Configurar Firebase" en pantalla.
+    // =========================================================================
+    const DEFAULT_FIREBASE_CONFIG = {
+      apiKey: "TU_API_KEY",
+      authDomain: "TU_PROYECTO.firebaseapp.com",
+      projectId: "TU_PROJECT_ID",
+      storageBucket: "TU_PROYECTO.appspot.com",
+      messagingSenderId: "TU_MESSAGING_SENDER_ID",
+      appId: "TU_APP_ID"
+    };
+
+    // Claves de almacenamiento local (localStorage)
+    const STORAGE_KEYS = {
+      FIREBASE_CONFIG: "pocketbac_firebase_config",
+      LOCAL_USERS: "pocketbac_local_users_v2",
+      LOCAL_SESSION: "pocketbac_local_session_v2",
+      LOCAL_GELS: "pocketbac_local_gels_v2",
+      LOCAL_ORDERS: "pocketbac_local_orders_v2"
+    };
+
+    // Estado de conexión y sesión actual
+    let isFirebaseActive = false;
+    let firebaseApp = null;
+    let auth = null;
+    let db = null;
+    let unsubscribeGels = null;
+    let unsubscribeOrders = null;
+
+    // Sesión activa: { uid, name, email, role: 'dueno' | 'visitante', isQuickDemo }
+    let currentUser = null;
+
+    // Catálogo (inicia COMPLETAMENTE VACÍO: 0 geles de prueba) y Pedidos
+    let gelsCatalog = [];
+    let ordersList = [];
+
+    // Estado de interfaz
+    let currentOwnerSection = "catalog"; // 'catalog' | 'orders'
+    let currentOrdersFilter = "all"; // 'all' | 'pendiente' | 'atendido'
+    let currentSearchQuery = "";
+    let currentDraftImage = "default:bottle";
+    let activeDetailGel = null;
+    let pendingConfirmAction = null;
+    let toastTimer = null;
+
+    // -------------------------------------------------------------------------
+    // INICIALIZACIÓN DE FIREBASE CON RESPALDO AUTOMÁTICO EN LOCALSTORAGE
+    // -------------------------------------------------------------------------
+    function resolveActiveFirebaseConfig() {
+      if (DEFAULT_FIREBASE_CONFIG.apiKey && DEFAULT_FIREBASE_CONFIG.apiKey !== "TU_API_KEY") {
+        return DEFAULT_FIREBASE_CONFIG;
+      }
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.FIREBASE_CONFIG));
+        if (saved && saved.apiKey && saved.apiKey !== "TU_API_KEY") {
+          return saved;
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    async function initBackend() {
+      const activeConfig = resolveActiveFirebaseConfig();
+
+      if (unsubscribeGels) {
+        unsubscribeGels();
+        unsubscribeGels = null;
+      }
+      if (unsubscribeOrders) {
+        unsubscribeOrders();
+        unsubscribeOrders = null;
+      }
+
+      if (activeConfig) {
+        try {
+          if (getApps().length > 0) {
+            for (const existingApp of getApps()) {
+              await deleteApp(existingApp);
+            }
+          }
+
+          firebaseApp = initializeApp(activeConfig);
+          auth = getAuth(firebaseApp);
+          db = getFirestore(firebaseApp);
+          isFirebaseActive = true;
+
+          updateConnectionBadges(true, activeConfig.projectId);
+          setupFirebaseAuthListener();
+          subscribeToFirestoreCollections();
+          return;
+        } catch (err) {
+          console.error("No se pudo iniciar Firebase, cambiando a Modo Local:", err);
+          isFirebaseActive = false;
+          showToast("No se pudo conectar con Firebase. Usando Modo Local.");
+        }
+      }
+
+      // Modo Local de respaldo
+      isFirebaseActive = false;
+      updateConnectionBadges(false);
+      loadLocalGels();
+      loadLocalOrders();
+      checkLocalSession();
+    }
+
+    function updateConnectionBadges(connected, projectId = "") {
+      const authDot = document.getElementById("auth-status-dot");
+      const authText = document.getElementById("auth-status-text");
+      const navDot = document.getElementById("nav-status-dot");
+      const navText = document.getElementById("nav-status-text");
+      const footerInfo = document.getElementById("footer-sync-info");
+
+      if (connected) {
+        authDot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+        authText.textContent = `Firebase Cloud (${projectId || "Conectado"})`;
+        navDot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse";
+        navText.textContent = "Firebase Cloud";
+        footerInfo.textContent = `Sincronizado en tiempo real con Cloud Firestore (${projectId}).`;
+      } else {
+        authDot.className = "w-2 h-2 rounded-full bg-pastel-petal";
+        authText.textContent = "Modo Local activo";
+        navDot.className = "w-1.5 h-1.5 rounded-full bg-pastel-petal";
+        navText.textContent = "Modo Local";
+        footerInfo.textContent = "Modo Local activo. Configura Firebase cuando desees sincronizar en la nube.";
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // SUSCRIPCIONES EN TIEMPO REAL (FIRESTORE: pocketbac_geles & pocketbac_pedidos)
+    // -------------------------------------------------------------------------
+    function subscribeToFirestoreCollections() {
+      if (!isFirebaseActive || !db) return;
+
+      // 1. Colección de Geles
+      const gelsQuery = query(collection(db, "pocketbac_geles"), orderBy("createdAt", "desc"));
+      unsubscribeGels = onSnapshot(
+        gelsQuery,
+        (snapshot) => {
+          const items = [];
+          snapshot.forEach((docSnap) => {
+            items.push({ id: docSnap.id, ...docSnap.data() });
+          });
+          gelsCatalog = items;
+          renderGelsGrid();
+        },
+        (error) => {
+          console.error("Error leyendo pocketbac_geles:", error);
+          showToast("Verifica los permisos de lectura en Firestore (pocketbac_geles).");
+        }
+      );
+
+      // 2. Colección de Pedidos de Visitantes
+      const ordersQuery = query(collection(db, "pocketbac_pedidos"), orderBy("createdAt", "desc"));
+      unsubscribeOrders = onSnapshot(
+        ordersQuery,
+        (snapshot) => {
+          const items = [];
+          snapshot.forEach((docSnap) => {
+            items.push({ id: docSnap.id, ...docSnap.data() });
+          });
+          ordersList = items;
+          updatePendingOrdersCounter();
+          renderOrdersView();
+        },
+        (error) => {
+          console.error("Error leyendo pocketbac_pedidos:", error);
+        }
+      );
+    }
+
+    // -------------------------------------------------------------------------
+    // AUTENTICACIÓN, ROLES (DUEÑO vs VISITANTE) Y ACCESO RÁPIDO
+    // -------------------------------------------------------------------------
+    function setupFirebaseAuthListener() {
+      if (!auth) return;
+      onAuthStateChanged(auth, async (fbUser) => {
+        if (fbUser) {
+          // Obtener rol desde Firestore 'pocketbac_usuarios'
+          let role = "visitante";
+          let name = fbUser.displayName || fbUser.email.split("@")[0];
+
+          try {
+            const userDocRef = doc(db, "pocketbac_usuarios", fbUser.uid);
+            const userDocSnap = await getDoc(userDocRef);
+            if (userDocSnap.exists()) {
+              const data = userDocSnap.data();
+              role = data.role || "visitante";
+              name = data.name || name;
+            }
+          } catch (e) {
+            console.warn("No se pudo leer perfil en pocketbac_usuarios:", e);
+          }
+
+          enterStoreWithUser({
+            uid: fbUser.uid,
+            name,
+            email: fbUser.email,
+            role,
+            isQuickDemo: false
+          });
+        } else {
+          // Si hay una sesión rápida de prueba en localStorage, respetarla
+          checkLocalSession();
+        }
+      });
+    }
+
+    function switchAuthTab(tab) {
+      const loginTab = document.getElementById("tab-login");
+      const registerTab = document.getElementById("tab-register");
+      const loginForm = document.getElementById("login-form");
+      const registerForm = document.getElementById("register-form");
+      hideAuthAlert();
+
+      if (tab === "login") {
+        loginTab.className = "py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200 bg-white text-pastel-deep shadow-sm";
+        registerTab.className = "py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200 text-pastel-berry hover:text-pastel-deep";
+        loginForm.classList.remove("hidden");
+        registerForm.classList.add("hidden");
+      } else {
+        registerTab.className = "py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200 bg-white text-pastel-deep shadow-sm";
+        loginTab.className = "py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200 text-pastel-berry hover:text-pastel-deep";
+        registerForm.classList.remove("hidden");
+        loginForm.classList.add("hidden");
+      }
+    }
+
+    function updateRoleSelectorStyles() {
+      const selectedRole = document.querySelector('input[name="reg-role"]:checked')?.value || "visitante";
+      const cardVisitante = document.getElementById("role-card-visitante");
+      const checkVisitante = document.getElementById("role-check-visitante");
+      const cardDueno = document.getElementById("role-card-dueno");
+      const checkDueno = document.getElementById("role-check-dueno");
+
+      if (selectedRole === "visitante") {
+        cardVisitante.className = "h-full p-3.5 rounded-2xl border-2 border-pastel-berry bg-pastel-blush transition-all duration-200";
+        checkVisitante.className = "w-4 h-4 rounded-full bg-pastel-berry text-white flex items-center justify-center text-[10px] font-bold";
+        cardDueno.className = "h-full p-3.5 rounded-2xl border-2 border-pastel-soft bg-white hover:bg-pastel-blush/40 transition-all duration-200";
+        checkDueno.className = "w-4 h-4 rounded-full border border-pastel-rose bg-white text-transparent flex items-center justify-center text-[10px] font-bold";
+      } else {
+        cardDueno.className = "h-full p-3.5 rounded-2xl border-2 border-pastel-berry bg-pastel-blush transition-all duration-200";
+        checkDueno.className = "w-4 h-4 rounded-full bg-pastel-berry text-white flex items-center justify-center text-[10px] font-bold";
+        cardVisitante.className = "h-full p-3.5 rounded-2xl border-2 border-pastel-soft bg-white hover:bg-pastel-blush/40 transition-all duration-200";
+        checkVisitante.className = "w-4 h-4 rounded-full border border-pastel-rose bg-white text-transparent flex items-center justify-center text-[10px] font-bold";
+      }
+    }
+
+    function showAuthAlert(msg) {
+      const box = document.getElementById("auth-alert");
+      document.getElementById("auth-alert-text").textContent = msg;
+      box.classList.remove("hidden");
+    }
+
+    function hideAuthAlert() {
+      document.getElementById("auth-alert").classList.add("hidden");
+    }
+
+    async function handleLogin(event) {
+      event.preventDefault();
+      hideAuthAlert();
+
+      const email = document.getElementById("login-email").value.trim().toLowerCase();
+      const password = document.getElementById("login-password").value;
+
+      if (isFirebaseActive && auth) {
+        const btn = document.getElementById("login-submit-btn");
+        btn.disabled = true;
+        btn.textContent = "Iniciando sesión...";
+        try {
+          const cred = await signInWithEmailAndPassword(auth, email, password);
+          let role = "visitante";
+          let name = email.split("@")[0];
+
+          const userSnap = await getDoc(doc(db, "pocketbac_usuarios", cred.user.uid));
+          if (userSnap.exists()) {
+            const data = userSnap.data();
+            role = data.role || "visitante";
+            name = data.name || name;
+          }
+
+          enterStoreWithUser({
+            uid: cred.user.uid,
+            name,
+            email,
+            role,
+            isQuickDemo: false
+          });
+          showToast(`¡Bienvenida/o a PocketBac, ${name}!`);
+        } catch (err) {
+          showAuthAlert(mapFirebaseAuthError(err.code));
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Iniciar Sesión";
+        }
+        return;
+      }
+
+      // Modo Local
+      const users = getLocalUsers();
+      const found = users.find((u) => u.email === email && u.password === password);
+      if (!found) {
+        showAuthAlert("Correo o contraseña incorrectos. Puedes crear una cuenta o usar los accesos rápidos.");
+        return;
+      }
+
+      const sessionUser = {
+        uid: found.id,
+        name: found.name,
+        email: found.email,
+        role: found.role || "visitante",
+        isQuickDemo: false
+      };
+      saveLocalSession(sessionUser);
+      enterStoreWithUser(sessionUser);
+      showToast(`¡Hola de nuevo, ${found.name}!`);
+    }
+
+    async function handleRegister(event) {
+      event.preventDefault();
+      hideAuthAlert();
+
+      const name = document.getElementById("reg-name").value.trim();
+      const email = document.getElementById("reg-email").value.trim().toLowerCase();
+      const password = document.getElementById("reg-password").value;
+      const role = document.querySelector('input[name="reg-role"]:checked')?.value || "visitante";
+
+      if (isFirebaseActive && auth && db) {
+        const btn = document.getElementById("register-submit-btn");
+        btn.disabled = true;
+        btn.textContent = "Creando cuenta...";
+        try {
+          const cred = await createUserWithEmailAndPassword(auth, email, password);
+          await setDoc(doc(db, "pocketbac_usuarios", cred.user.uid), {
+            name,
+            email,
+            role,
+            createdAt: Date.now()
+          });
+
+          enterStoreWithUser({
+            uid: cred.user.uid,
+            name,
+            email,
+            role,
+            isQuickDemo: false
+          });
+          showToast(`¡Cuenta de ${role === "dueno" ? "Dueño" : "Visitante"} creada!`);
+        } catch (err) {
+          showAuthAlert(mapFirebaseAuthError(err.code));
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Crear Cuenta";
+        }
+        return;
+      }
+
+      // Modo Local
+      const users = getLocalUsers();
+      if (users.some((u) => u.email === email)) {
+        showAuthAlert("Este correo electrónico ya está registrado.");
+        return;
+      }
+
+      const newUser = {
+        id: "user-" + Date.now(),
+        name,
+        email,
+        password,
+        role
+      };
+      users.push(newUser);
+      try {
+        localStorage.setItem(STORAGE_KEYS.LOCAL_USERS, JSON.stringify(users));
+      } catch (e) {}
+
+      const sessionUser = {
+        uid: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+        isQuickDemo: false
+      };
+      saveLocalSession(sessionUser);
+      enterStoreWithUser(sessionUser);
+      showToast(`¡Cuenta creada como ${role === "dueno" ? "Dueño" : "Visitante"}!`);
+    }
+
+    function quickEnter(role) {
+      const demoUser =
+        role === "dueno"
+          ? {
+              uid: "demo-dueno",
+              name: "Dueño PocketBac",
+              email: "dueno@pocketbac.com",
+              role: "dueno",
+              isQuickDemo: true
+            }
+          : {
+              uid: "demo-visitante",
+              name: "Visitante Invitada",
+              email: "visitante@pocketbac.com",
+              role: "visitante",
+              isQuickDemo: true
+            };
+
+      saveLocalSession(demoUser);
+      enterStoreWithUser(demoUser);
+      showToast(
+        role === "dueno"
+          ? "Acceso rápido como 👑 Dueño"
+          : "Acceso rápido como 🛍️ Visitante"
+      );
+    }
+
+    async function handleLogout() {
+      currentUser = null;
+      try {
+        localStorage.removeItem(STORAGE_KEYS.LOCAL_SESSION);
+      } catch (e) {}
+
+      if (isFirebaseActive && auth && auth.currentUser) {
+        try {
+          await signOut(auth);
+        } catch (e) {}
+      }
+
+      document.getElementById("store-view").classList.add("hidden");
+      document.getElementById("auth-view").classList.remove("hidden");
+      document.getElementById("login-form").reset();
+      document.getElementById("register-form").reset();
+      hideAuthAlert();
+      showToast("Sesión cerrada");
+    }
+
+    function enterStoreWithUser(userObj) {
+      currentUser = userObj;
+      const isOwner = userObj.role === "dueno";
+
+      // Actualizar insignia de rol y nombre en el header
+      const roleBadge = document.getElementById("user-role-badge");
+      const nameDisplay = document.getElementById("user-display-name");
+      roleBadge.textContent = isOwner ? "👑 Dueño" : "🛍️ Visitante";
+      nameDisplay.textContent = userObj.name;
+
+      // Mostrar / Ocultar controles exclusivos de Dueño
+      const ownerNavTabs = document.getElementById("owner-nav-tabs");
+      const ownerAddGelBtn = document.getElementById("owner-add-gel-btn");
+      const emptyAddBtn = document.getElementById("empty-catalog-add-btn");
+      const emptyTitle = document.getElementById("empty-catalog-title");
+      const emptyDesc = document.getElementById("empty-catalog-desc");
+      const catalogSubtitle = document.getElementById("catalog-subtitle");
+
+      if (isOwner) {
+        ownerNavTabs.classList.remove("hidden");
+        ownerAddGelBtn.classList.remove("hidden");
+        emptyAddBtn.classList.remove("hidden");
+        emptyTitle.textContent = "Tu boutique PocketBac está lista para estrenarse";
+        emptyDesc.textContent =
+          "Aún no hay geles registrados en la vitrina. Comienza agregando tu primer gel antibacterial con su foto, aroma, precio orientativo e ingredientes.";
+        catalogSubtitle.textContent =
+          "Administra tus productos o haz clic en un gel para ver y editar su ficha completa.";
+      } else {
+        ownerNavTabs.classList.add("hidden");
+        ownerAddGelBtn.classList.add("hidden");
+        emptyAddBtn.classList.add("hidden");
+        emptyTitle.textContent = "La boutique está preparando su nueva colección";
+        emptyDesc.textContent =
+          "Aún no hay geles publicados en el catálogo. Vuelve pronto para descubrir nuestros aromas y hacer tu pedido.";
+        catalogSubtitle.textContent =
+          "Haz clic sobre la imagen de cualquier gel para ver su ficha completa y solicitarlo al dueño.";
+      }
+
+      // Siempre abrir en la sección de catálogo al iniciar
+      switchOwnerSection("catalog");
+
+      document.getElementById("auth-view").classList.add("hidden");
+      document.getElementById("store-view").classList.remove("hidden");
+
+      renderGelsGrid();
+      updatePendingOrdersCounter();
+      renderOrdersView();
+    }
+
+    function switchOwnerSection(section) {
+      // Un visitante nunca puede acceder a la sección de pedidos del dueño
+      if (currentUser?.role !== "dueno" && section === "orders") {
+        section = "catalog";
+      }
+
+      currentOwnerSection = section;
+      const catalogSec = document.getElementById("catalog-section");
+      const ordersSec = document.getElementById("orders-section");
+      const tabCatalog = document.getElementById("nav-tab-catalog");
+      const tabOrders = document.getElementById("nav-tab-orders");
+
+      if (section === "catalog") {
+        catalogSec.classList.remove("hidden");
+        ordersSec.classList.add("hidden");
+        tabCatalog.className = "px-4 py-2 rounded-full text-xs sm:text-sm font-brand font-bold transition-all duration-200 bg-white text-pastel-deep shadow-sm flex items-center gap-1.5";
+        tabOrders.className = "px-4 py-2 rounded-full text-xs sm:text-sm font-brand font-bold transition-all duration-200 text-pastel-berry hover:text-pastel-deep flex items-center gap-1.5";
+      } else {
+        catalogSec.classList.add("hidden");
+        ordersSec.classList.remove("hidden");
+        tabOrders.className = "px-4 py-2 rounded-full text-xs sm:text-sm font-brand font-bold transition-all duration-200 bg-white text-pastel-deep shadow-sm flex items-center gap-1.5";
+        tabCatalog.className = "px-4 py-2 rounded-full text-xs sm:text-sm font-brand font-bold transition-all duration-200 text-pastel-berry hover:text-pastel-deep flex items-center gap-1.5";
+        renderOrdersView();
+      }
+    }
+
+    function mapFirebaseAuthError(code) {
+      const errors = {
+        "auth/invalid-email": "El formato del correo electrónico no es válido.",
+        "auth/user-not-found": "No existe una cuenta registrada con este correo.",
+        "auth/wrong-password": "La contraseña ingresada es incorrecta.",
+        "auth/invalid-credential": "Correo o contraseña incorrectos.",
+        "auth/email-already-in-use": "Este correo ya está registrado.",
+        "auth/weak-password": "La contraseña debe tener al menos 6 caracteres."
+      };
+      return errors[code] || "Error de autenticación (" + (code || "desconocido") + ").";
+    }
+
+    function getLocalUsers() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEYS.LOCAL_USERS)) || [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveLocalSession(userObj) {
+      try {
+        localStorage.setItem(STORAGE_KEYS.LOCAL_SESSION, JSON.stringify(userObj));
+      } catch (e) {}
+    }
+
+    function checkLocalSession() {
+      try {
+        const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.LOCAL_SESSION));
+        if (session && session.name && session.role) {
+          enterStoreWithUser(session);
+        }
+      } catch (e) {}
+    }
+
+    // -------------------------------------------------------------------------
+    // GESTIÓN DEL CATÁLOGO DE GELES (0 PRODUCTOS INICIALES)
+    // -------------------------------------------------------------------------
+    function loadLocalGels() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.LOCAL_GELS));
+        gelsCatalog = Array.isArray(saved) ? saved : [];
+      } catch {
+        gelsCatalog = [];
+      }
+      renderGelsGrid();
+    }
+
+    function saveLocalGels() {
+      try {
+        localStorage.setItem(STORAGE_KEYS.LOCAL_GELS, JSON.stringify(gelsCatalog));
+        return true;
+      } catch {
+        showToast("Memoria local llena. Usa una imagen más ligera o URL externa.");
+        return false;
+      }
+    }
+
+    function formatCurrencyPrice(rawValue) {
+      if (rawValue === null || rawValue === undefined) return "$0.00 MXN";
+      const str = String(rawValue).trim();
+      if (!str) return "$0.00 MXN";
+
+      const numericCandidate = str.replace(/[$,\s]/g, "");
+      if (/^\d+(\.\d+)?$/.test(numericCandidate)) {
+        const num = parseFloat(numericCandidate);
+        return (
+          new Intl.NumberFormat("es-MX", {
+            style: "currency",
+            currency: "MXN",
+            minimumFractionDigits: 2
+          }).format(num) + " MXN"
+        );
+      }
+      return str;
+    }
+
+    function getDefaultPocketBacSVG() {
+      return `
+        <svg viewBox="0 0 160 160" class="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="80" cy="82" r="66" fill="#FFF0F5"/>
+          <path d="M70 36V26C70 20.4772 74.4772 16 80 16C85.5228 16 90 20.4772 90 26V36" stroke="#E77A9E" stroke-width="4" stroke-linecap="round"/>
+          <rect x="64" y="34" width="32" height="13" rx="6.5" fill="#FFFFFF" stroke="#F4A6C1" stroke-width="2.5"/>
+          <rect x="48" y="46" width="64" height="84" rx="26" fill="#FADADD" stroke="#F4A6C1" stroke-width="2.5"/>
+          <rect x="55" y="53" width="50" height="70" rx="20" fill="#F8C8DC"/>
+          <rect x="61" y="65" width="38" height="44" rx="14" fill="#FFFFFF" stroke="#FADADD" stroke-width="2"/>
+          <path d="M80 74C80 74 70 85.5 70 91.5C70 97.0228 74.4772 101.5 80 101.5C85.5228 101.5 90 97.0228 90 91.5C90 85.5 80 74 80 74Z" fill="#E77A9E"/>
+          <path d="M122 42L124 47L129 49L124 51L122 56L120 51L115 49L120 47L122 42Z" fill="#E77A9E"/>
+        </svg>
+      `;
+    }
+
+    function renderProductVisualHTML(imageSource, altText) {
+      if (!imageSource || imageSource === "default:bottle") {
+        return getDefaultPocketBacSVG();
+      }
+      const fallbackUrl = `https://placehold.co/400x400/FADADD/E77A9E?text=${encodeURIComponent(altText || "PocketBac")}`;
+      return `<img src="${escapeHTML(imageSource)}" alt="${escapeHTML(altText)}" onerror="this.onerror=null;this.src='${fallbackUrl}';" class="w-full h-full object-cover rounded-2xl" />`;
+    }
+
+    function escapeHTML(str) {
+      if (!str) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function handleSearch(value) {
+      currentSearchQuery = value.trim().toLowerCase();
+      const clearBtn = document.getElementById("clear-search-btn");
+      if (currentSearchQuery.length > 0) {
+        clearBtn.classList.remove("hidden");
+      } else {
+        clearBtn.classList.add("hidden");
+      }
+      renderGelsGrid();
+    }
+
+    function clearSearch() {
+      document.getElementById("search-input").value = "";
+      currentSearchQuery = "";
+      document.getElementById("clear-search-btn").classList.add("hidden");
+      renderGelsGrid();
+    }
+
+    function renderGelsGrid() {
+      const grid = document.getElementById("gels-grid");
+      const emptyCatalog = document.getElementById("empty-catalog-state");
+      const emptySearch = document.getElementById("empty-search-state");
+      const isOwner = currentUser?.role === "dueno";
+
+      if (gelsCatalog.length === 0) {
+        grid.innerHTML = "";
+        emptySearch.classList.add("hidden");
+        emptyCatalog.classList.remove("hidden");
+        return;
+      }
+
+      emptyCatalog.classList.add("hidden");
+
+      const filtered = gelsCatalog.filter((gel) => {
+        if (!currentSearchQuery) return true;
+        return (
+          (gel.name || "").toLowerCase().includes(currentSearchQuery) ||
+          (gel.aroma || "").toLowerCase().includes(currentSearchQuery)
+        );
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = "";
+        emptySearch.classList.remove("hidden");
+        return;
+      }
+
+      emptySearch.classList.add("hidden");
+
+      grid.innerHTML = filtered
+        .map(
+          (gel) => `
+          <article class="bg-white rounded-3xl border border-pastel-rose shadow-card hover:shadow-boutique transition-all duration-300 overflow-hidden flex flex-col group">
+            
+            <!-- Imagen Clicable para Abrir Ficha Detallada -->
+            <div
+              onclick="openDetailModal('${escapeHTML(gel.id)}')"
+              role="button"
+              tabindex="0"
+              onkeydown="if(event.key==='Enter') openDetailModal('${escapeHTML(gel.id)}')"
+              aria-label="Ver detalles de ${escapeHTML(gel.name)}"
+              class="relative aspect-[4/3] bg-pastel-blush p-4 flex items-center justify-center cursor-pointer overflow-hidden border-b border-pastel-soft"
+            >
+              <div class="w-40 h-40 transition-transform duration-300 group-hover:scale-105 flex items-center justify-center">
+                ${renderProductVisualHTML(gel.image, gel.name)}
+              </div>
+
+              <div class="absolute inset-x-0 bottom-3 flex justify-center opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 pointer-events-none">
+                <span class="px-3.5 py-1.5 rounded-full bg-white/95 text-pastel-deep text-xs font-bold shadow-md border border-pastel-rose flex items-center gap-1.5">
+                  <span>${isOwner ? "👁️ Ver ficha" : "✨ Ver y Pedir"}</span>
+                </span>
+              </div>
+            </div>
+
+            <!-- Información del Producto -->
+            <div class="p-5 flex-1 flex flex-col justify-between">
+              <div>
+                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-pastel-blush border border-pastel-rose text-pastel-berry text-xs font-semibold mb-2.5">
+                  <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                  </svg>
+                  <span class="truncate max-w-[190px]">${escapeHTML(gel.aroma)}</span>
+                </span>
+
+                <h3
+                  onclick="openDetailModal('${escapeHTML(gel.id)}')"
+                  class="font-brand text-lg font-bold text-pastel-deep hover:text-pastel-berry cursor-pointer transition leading-snug"
+                >
+                  ${escapeHTML(gel.name)}
+                </h3>
+              </div>
+
+              <!-- Precio Orientativo + Controles según Rol -->
+              <div class="mt-4 pt-3.5 border-t border-pastel-blush flex items-center justify-between gap-2">
+                <div>
+                  <span class="text-[10px] uppercase tracking-wider text-pastel-berry font-semibold block">Precio orientativo</span>
+                  <span class="font-brand text-base sm:text-lg font-bold text-pastel-deep">${escapeHTML(formatCurrencyPrice(gel.price))}</span>
+                </div>
+
+                ${
+                  isOwner
+                    ? `
+                  <div class="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onclick="openFormModal('${escapeHTML(gel.id)}')"
+                      title="Editar gel"
+                      aria-label="Editar ${escapeHTML(gel.name)}"
+                      class="p-2 rounded-xl bg-pastel-blush hover:bg-pastel-rose text-pastel-berry hover:text-pastel-deep transition"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      onclick="requestDeleteGel('${escapeHTML(gel.id)}')"
+                      title="Eliminar gel"
+                      aria-label="Eliminar ${escapeHTML(gel.name)}"
+                      class="p-2 rounded-xl bg-pastel-blush hover:bg-rose-100 text-pastel-berry hover:text-rose-700 transition"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                `
+                    : `
+                  <button
+                    type="button"
+                    onclick="openDetailModal('${escapeHTML(gel.id)}')"
+                    class="px-3.5 py-2 rounded-full bg-pastel-blush hover:bg-pastel-rose text-pastel-deep font-brand font-bold text-xs border border-pastel-rose transition"
+                  >
+                    Ver detalle
+                  </button>
+                `
+                }
+              </div>
+            </div>
+
+          </article>
+        `
+        )
+        .join("");
+    }
+
+    // -------------------------------------------------------------------------
+    // MODAL DE DETALLES DEL GEL (Con flujo de pedido para Visitante)
+    // -------------------------------------------------------------------------
+    function openDetailModal(gelId) {
+      const gel = gelsCatalog.find((item) => item.id === gelId);
+      if (!gel) return;
+
+      activeDetailGel = gel;
+      const isOwner = currentUser?.role === "dueno";
+
+      document.getElementById("detail-title").textContent = gel.name;
+      document.getElementById("detail-aroma").textContent = gel.aroma;
+      document.getElementById("detail-price").textContent = formatCurrencyPrice(gel.price);
+
+      const ingredientsContainer = document.getElementById("detail-ingredients");
+      const parts = (gel.ingredients || "")
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+      if (parts.length > 1) {
+        ingredientsContainer.innerHTML = `
+          <div class="flex flex-wrap gap-1.5">
+            ${parts
+              .map(
+                (ing) => `
+              <span class="px-2.5 py-1 rounded-xl bg-white border border-pastel-rose text-xs font-medium text-pastel-deep">
+                ${escapeHTML(ing)}
+              </span>
+            `
+              )
+              .join("")}
+          </div>
+        `;
+      } else {
+        ingredientsContainer.textContent = gel.ingredients;
+      }
+
+      document.getElementById("detail-image-container").innerHTML = renderProductVisualHTML(gel.image, gel.name);
+
+      // Configurar zona inferior según si es Visitante o Dueño
+      const visitorOrderBox = document.getElementById("visitor-order-box");
+      const ownerDetailActions = document.getElementById("owner-detail-actions");
+      const orderSuccessBanner = document.getElementById("order-success-banner");
+
+      orderSuccessBanner.classList.add("hidden");
+
+      if (isOwner) {
+        visitorOrderBox.classList.add("hidden");
+        ownerDetailActions.classList.remove("hidden");
+
+        const editBtn = document.getElementById("detail-edit-btn");
+        editBtn.onclick = () => {
+          closeDetailModal();
+          openFormModal(gel.id);
+        };
+      } else {
+        ownerDetailActions.classList.add("hidden");
+        visitorOrderBox.classList.remove("hidden");
+        document.getElementById("visitor-order-form").reset();
+        document.getElementById("order-quantity").value = 1;
+      }
+
+      document.getElementById("detail-modal").classList.remove("hidden");
+    }
+
+    function closeDetailModal() {
+      document.getElementById("detail-modal").classList.add("hidden");
+      activeDetailGel = null;
+    }
+
+    function adjustOrderQuantity(delta) {
+      const input = document.getElementById("order-quantity");
+      const current = parseInt(input.value, 10) || 1;
+      const next = Math.min(99, Math.max(1, current + delta));
+      input.value = next;
+    }
+
+    // -------------------------------------------------------------------------
+    // ENVÍO Y GESTIÓN DE PEDIDOS (VISITANTE -> DUEÑO)
+    // -------------------------------------------------------------------------
+    async function handlePlaceOrder(event) {
+      event.preventDefault();
+      if (!activeDetailGel || !currentUser) return;
+
+      const quantity = Math.max(1, parseInt(document.getElementById("order-quantity").value, 10) || 1);
+      const note = document.getElementById("order-note").value.trim();
+      const submitBtn = document.getElementById("submit-order-btn");
+
+      const now = new Date();
+      const dateFormatted = now.toLocaleString("es-MX", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+
+      const orderPayload = {
+        gelId: activeDetailGel.id,
+        gelName: activeDetailGel.name,
+        gelAroma: activeDetailGel.aroma,
+        gelPrice: activeDetailGel.price,
+        gelImage: activeDetailGel.image || "default:bottle",
+        quantity,
+        note,
+        customerName: currentUser.name,
+        customerEmail: currentUser.email,
+        customerId: currentUser.uid || "visitante",
+        status: "pendiente",
+        createdAt: Date.now(),
+        dateFormatted
+      };
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<span>Enviando pedido...</span>`;
+
+      try {
+        if (isFirebaseActive && db) {
+          await addDoc(collection(db, "pocketbac_pedidos"), orderPayload);
+        } else {
+          ordersList.unshift({
+            id: "order-" + Date.now(),
+            ...orderPayload
+          });
+          saveLocalOrders();
+          updatePendingOrdersCounter();
+          renderOrdersView();
+        }
+
+        // Mostrar confirmación visual clara dentro del modal y Toast
+        document.getElementById("order-confirmed-user").textContent = `${currentUser.name} (${currentUser.email})`;
+        document.getElementById("order-success-banner").classList.remove("hidden");
+        document.getElementById("visitor-order-form").reset();
+        document.getElementById("order-quantity").value = 1;
+
+        showToast(`¡Pedido de "${activeDetailGel.name}" enviado al dueño!`);
+      } catch (err) {
+        console.error("Error al enviar pedido:", err);
+        showToast("No se pudo enviar el pedido. Revisa la conexión o permisos de Firestore.");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<span>✨ Pedir este Gel</span>`;
+      }
+    }
+
+    function loadLocalOrders() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.LOCAL_ORDERS));
+        ordersList = Array.isArray(saved) ? saved : [];
+      } catch {
+        ordersList = [];
+      }
+      updatePendingOrdersCounter();
+      renderOrdersView();
+    }
+
+    function saveLocalOrders() {
+      try {
+        localStorage.setItem(STORAGE_KEYS.LOCAL_ORDERS, JSON.stringify(ordersList));
+      } catch (e) {}
+    }
+
+    function updatePendingOrdersCounter() {
+      const pendingCount = ordersList.filter((o) => o.status === "pendiente").length;
+      const badge = document.getElementById("pending-orders-badge");
+      if (badge) {
+        badge.textContent = pendingCount;
+      }
+    }
+
+    function setOrdersFilter(filter) {
+      currentOrdersFilter = filter;
+      const filters = ["all", "pendiente", "atendido"];
+
+      filters.forEach((f) => {
+        const btn = document.getElementById(`filter-orders-${f}`);
+        if (!btn) return;
+        if (f === filter) {
+          btn.className = "px-4 py-1.5 rounded-full text-xs font-bold bg-pastel-berry text-white shadow-sm transition";
+        } else {
+          btn.className = "px-4 py-1.5 rounded-full text-xs font-bold bg-pastel-blush text-pastel-deep hover:bg-pastel-soft border border-pastel-rose transition";
+        }
+      });
+
+      renderOrdersView();
+    }
+
+    function renderOrdersView() {
+      const total = ordersList.length;
+      const pending = ordersList.filter((o) => o.status === "pendiente").length;
+      const attended = ordersList.filter((o) => o.status === "atendido").length;
+
+      document.getElementById("stat-orders-total").textContent = total;
+      document.getElementById("stat-orders-pending").textContent = pending;
+      document.getElementById("stat-orders-attended").textContent = attended;
+
+      const listContainer = document.getElementById("orders-list");
+      const emptyOrders = document.getElementById("empty-orders-state");
+
+      const filteredOrders = ordersList.filter((o) => {
+        if (currentOrdersFilter === "all") return true;
+        return o.status === currentOrdersFilter;
+      });
+
+      if (filteredOrders.length === 0) {
+        listContainer.innerHTML = "";
+        emptyOrders.classList.remove("hidden");
+        const titleEl = document.getElementById("empty-orders-title");
+        const descEl = document.getElementById("empty-orders-desc");
+        if (total === 0) {
+          titleEl.textContent = "Aún no hay pedidos de visitantes";
+          descEl.innerHTML = `Cuando una cuenta visitante entre a un gel y pulse <strong>"✨ Pedir este Gel"</strong>, su solicitud aparecerá aquí automáticamente con su nombre, correo y cantidad.`;
+        } else {
+          titleEl.textContent = "No hay pedidos en este filtro";
+          descEl.textContent = "Cambia el filtro superior a 'Todos' para revisar el historial completo.";
+        }
+        return;
+      }
+
+      emptyOrders.classList.add("hidden");
+
+      listContainer.innerHTML = filteredOrders
+        .map((order) => {
+          const isPending = order.status === "pendiente";
+          return `
+            <article class="bg-white rounded-3xl border-2 ${
+              isPending ? "border-pastel-rose" : "border-pastel-soft opacity-95"
+            } shadow-card p-5 sm:p-6 flex flex-col justify-between transition-all">
+              
+              <div>
+                <!-- Cabecera de la tarjeta: Cuenta Visitante + Estado -->
+                <div class="flex flex-wrap items-start justify-between gap-2 pb-4 border-b border-pastel-blush">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-2xl bg-pastel-blush border border-pastel-rose flex items-center justify-center text-base shrink-0">
+                      🛍️
+                    </div>
+                    <div>
+                      <span class="text-[10px] uppercase tracking-wider font-bold text-pastel-berry block">
+                        Solicitado por cuenta visitante
+                      </span>
+                      <p class="font-brand font-bold text-base text-pastel-deep leading-tight">
+                        ${escapeHTML(order.customerName)}
+                      </p>
+                      <p class="text-xs text-pastel-berry">
+                        ${escapeHTML(order.customerEmail)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="text-right">
+                    <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${
+                      isPending
+                        ? "bg-pastel-soft text-pastel-deep border border-pastel-rose"
+                        : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                    }">
+                      <span>${isPending ? "⏳ Pendiente" : "✅ Atendido"}</span>
+                    </span>
+                    <span class="block text-[11px] text-pastel-berry mt-1">
+                      ${escapeHTML(order.dateFormatted || "")}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Detalle del Gel Pedido -->
+                <div class="mt-4 flex items-center gap-4 bg-pastel-blush/70 p-3.5 rounded-2xl border border-pastel-soft">
+                  <div class="w-16 h-16 rounded-xl bg-white p-1.5 border border-pastel-soft shrink-0 flex items-center justify-center overflow-hidden">
+                    ${renderProductVisualHTML(order.gelImage, order.gelName)}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between gap-2">
+                      <h4 class="font-brand font-bold text-base text-pastel-deep truncate">
+                        ${escapeHTML(order.gelName)}
+                      </h4>
+                      <span class="px-2.5 py-0.5 rounded-full bg-white border border-pastel-rose font-brand font-bold text-xs text-pastel-deep shrink-0">
+                        Cant: ${escapeHTML(String(order.quantity || 1))}
+                      </span>
+                    </div>
+                    <p class="text-xs text-pastel-berry truncate mt-0.5">
+                      Aroma: ${escapeHTML(order.gelAroma)}
+                    </p>
+                    <p class="text-xs font-bold text-pastel-deep mt-1">
+                      Precio orientativo: ${escapeHTML(formatCurrencyPrice(order.gelPrice))}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Mensaje opcional del visitante -->
+                ${
+                  order.note
+                    ? `
+                  <div class="mt-3.5 p-3 rounded-2xl bg-pastel-blush border border-pastel-rose text-xs text-pastel-ink">
+                    <span class="font-bold text-pastel-berry uppercase tracking-wider text-[10px] block mb-0.5">
+                      💬 Mensaje del visitante:
+                    </span>
+                    "${escapeHTML(order.note)}"
+                  </div>
+                `
+                    : ""
+                }
+              </div>
+
+              <!-- Acciones Exclusivas del Dueño -->
+              <div class="mt-5 pt-4 border-t border-pastel-blush flex flex-wrap items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onclick="toggleOrderStatus('${escapeHTML(order.id)}')"
+                  class="px-4 py-2 rounded-full font-brand font-bold text-xs transition flex items-center gap-1.5 ${
+                    isPending
+                      ? "bg-pastel-rose hover:bg-pastel-berry text-pastel-deep hover:text-white shadow-sm"
+                      : "bg-pastel-blush hover:bg-pastel-soft text-pastel-deep border border-pastel-rose"
+                  }"
+                >
+                  <span>${isPending ? "✅ Marcar como Atendido" : "↩️ Volver a Pendiente"}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onclick="requestDeleteOrder('${escapeHTML(order.id)}')"
+                  class="px-3.5 py-2 rounded-full bg-white hover:bg-rose-50 text-pastel-berry hover:text-rose-700 border border-pastel-soft text-xs font-semibold transition flex items-center gap-1"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  <span>Eliminar pedido</span>
+                </button>
+              </div>
+
+            </article>
+          `;
+        })
+        .join("");
+    }
+
+    async function toggleOrderStatus(orderId) {
+      const order = ordersList.find((o) => o.id === orderId);
+      if (!order) return;
+
+      const nextStatus = order.status === "pendiente" ? "atendido" : "pendiente";
+
+      if (isFirebaseActive && db) {
+        try {
+          await updateDoc(doc(db, "pocketbac_pedidos", orderId), {
+            status: nextStatus
+          });
+          showToast(
+            nextStatus === "atendido"
+              ? "Pedido marcado como atendido"
+              : "Pedido devuelto a pendientes"
+          );
+        } catch (err) {
+          console.error("Error actualizando pedido en Firestore:", err);
+          showToast("No se pudo actualizar el estado del pedido.");
+        }
+        return;
+      }
+
+      // Modo Local
+      order.status = nextStatus;
+      saveLocalOrders();
+      updatePendingOrdersCounter();
+      renderOrdersView();
+      showToast(
+        nextStatus === "atendido"
+          ? "Pedido marcado como atendido"
+          : "Pedido devuelto a pendientes"
+      );
+    }
+
+    function requestDeleteOrder(orderId) {
+      const order = ordersList.find((o) => o.id === orderId);
+      if (!order) return;
+
+      openConfirmModal(
+        "¿Eliminar este pedido?",
+        `Se eliminará la solicitud de "${order.gelName}" hecha por ${order.customerName}.`,
+        async () => {
+          if (isFirebaseActive && db) {
+            try {
+              await deleteDoc(doc(db, "pocketbac_pedidos", orderId));
+              showToast("Pedido eliminado");
+            } catch (err) {
+              console.error("Error eliminando pedido:", err);
+              showToast("No se pudo eliminar el pedido.");
+            }
+          } else {
+            ordersList = ordersList.filter((o) => o.id !== orderId);
+            saveLocalOrders();
+            updatePendingOrdersCounter();
+            renderOrdersView();
+            showToast("Pedido eliminado");
+          }
+        }
+      );
+    }
+
+    // -------------------------------------------------------------------------
+    // MODAL DE CREACIÓN / EDICIÓN DE GELES (SOLO DUEÑO)
+    // -------------------------------------------------------------------------
+    function openFormModal(gelId = null) {
+      if (currentUser?.role !== "dueno") return;
+
+      const form = document.getElementById("gel-form");
+      form.reset();
+
+      const titleEl = document.getElementById("form-modal-title");
+      const idInput = document.getElementById("gel-id");
+
+      if (gelId) {
+        const gel = gelsCatalog.find((item) => item.id === gelId);
+        if (!gel) return;
+        titleEl.textContent = "Editar Gel PocketBac";
+        idInput.value = gel.id;
+        document.getElementById("gel-name").value = gel.name;
+        document.getElementById("gel-aroma").value = gel.aroma;
+        document.getElementById("gel-price").value = gel.price;
+        document.getElementById("gel-ingredients").value = gel.ingredients;
+        currentDraftImage = gel.image || "default:bottle";
+
+        if (currentDraftImage.startsWith("http")) {
+          switchImageInputMode("url");
+          document.getElementById("gel-image-url").value = currentDraftImage;
+        } else {
+          switchImageInputMode("file");
+        }
+      } else {
+        titleEl.textContent = "Añadir Nuevo Gel";
+        idInput.value = "";
+        currentDraftImage = "default:bottle";
+        switchImageInputMode("file");
+      }
+
+      updateLiveImagePreview();
+      document.getElementById("form-modal").classList.remove("hidden");
+    }
+
+    function closeFormModal() {
+      document.getElementById("form-modal").classList.add("hidden");
+    }
+
+    function switchImageInputMode(mode) {
+      const fileBtn = document.getElementById("img-mode-file-btn");
+      const urlBtn = document.getElementById("img-mode-url-btn");
+      const fileGroup = document.getElementById("img-input-file-group");
+      const urlGroup = document.getElementById("img-input-url-group");
+
+      if (mode === "file") {
+        fileBtn.className = "px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white text-pastel-deep border border-pastel-rose shadow-sm transition";
+        urlBtn.className = "px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-transparent text-pastel-berry hover:bg-white/70 border border-transparent transition";
+        fileGroup.classList.remove("hidden");
+        urlGroup.classList.add("hidden");
+      } else {
+        urlBtn.className = "px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white text-pastel-deep border border-pastel-rose shadow-sm transition";
+        fileBtn.className = "px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-transparent text-pastel-berry hover:bg-white/70 border border-transparent transition";
+        urlGroup.classList.remove("hidden");
+        fileGroup.classList.add("hidden");
+      }
+    }
+
+    function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const img = new Image();
+        img.onload = function () {
+          const maxDim = 600;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+
+          currentDraftImage = canvas.toDataURL("image/webp", 0.85);
+          updateLiveImagePreview();
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleUrlPreview(urlValue) {
+      const trimmed = urlValue.trim();
+      currentDraftImage = trimmed || "default:bottle";
+      updateLiveImagePreview();
+    }
+
+    function updateLiveImagePreview() {
+      const previewEl = document.getElementById("image-live-preview");
+      const namePreview = document.getElementById("gel-name").value.trim() || "PocketBac";
+      previewEl.innerHTML = renderProductVisualHTML(currentDraftImage, namePreview);
+    }
+
+    async function handleSaveGel(event) {
+      event.preventDefault();
+      if (currentUser?.role !== "dueno") return;
+
+      const id = document.getElementById("gel-id").value;
+      const name = document.getElementById("gel-name").value.trim();
+      const aroma = document.getElementById("gel-aroma").value.trim();
+      const price = document.getElementById("gel-price").value.trim();
+      const ingredients = document.getElementById("gel-ingredients").value.trim();
+
+      const saveBtn = document.getElementById("save-gel-btn");
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Guardando...";
+
+      try {
+        if (isFirebaseActive && db) {
+          if (id) {
+            await updateDoc(doc(db, "pocketbac_geles", id), {
+              name,
+              aroma,
+              price,
+              ingredients,
+              image: currentDraftImage,
+              updatedAt: Date.now()
+            });
+            showToast(`"${name}" actualizado en Firebase`);
+          } else {
+            await addDoc(collection(db, "pocketbac_geles"), {
+              name,
+              aroma,
+              price,
+              ingredients,
+              image: currentDraftImage,
+              createdAt: Date.now()
+            });
+            showToast(`"${name}" guardado en Firebase`);
+          }
+          closeFormModal();
+          return;
+        }
+
+        // Modo Local
+        if (id) {
+          const idx = gelsCatalog.findIndex((g) => g.id === id);
+          if (idx !== -1) {
+            gelsCatalog[idx] = {
+              ...gelsCatalog[idx],
+              name,
+              aroma,
+              price,
+              ingredients,
+              image: currentDraftImage
+            };
+          }
+          if (saveLocalGels()) {
+            showToast(`"${name}" actualizado`);
+          }
+        } else {
+          gelsCatalog.unshift({
+            id: "gel-" + Date.now(),
+            name,
+            aroma,
+            price,
+            ingredients,
+            image: currentDraftImage,
+            createdAt: Date.now()
+          });
+          if (saveLocalGels()) {
+            showToast(`"${name}" añadido a PocketBac`);
+          }
+        }
+
+        closeFormModal();
+        renderGelsGrid();
+      } catch (err) {
+        console.error("Error al guardar gel:", err);
+        showToast("Error al guardar el gel. Verifica permisos de Firestore.");
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Guardar Gel";
+      }
+    }
+
+    function requestDeleteGel(gelId) {
+      if (currentUser?.role !== "dueno") return;
+      const gel = gelsCatalog.find((g) => g.id === gelId);
+      if (!gel) return;
+
+      openConfirmModal(
+        "¿Eliminar este gel?",
+        `Se eliminará "${gel.name}" de tu catálogo PocketBac.`,
+        async () => {
+          if (isFirebaseActive && db) {
+            try {
+              await deleteDoc(doc(db, "pocketbac_geles", gelId));
+              showToast("Gel eliminado de Firebase");
+            } catch (err) {
+              console.error("Error eliminando gel:", err);
+              showToast("No se pudo eliminar el gel.");
+            }
+          } else {
+            gelsCatalog = gelsCatalog.filter((g) => g.id !== gelId);
+            saveLocalGels();
+            renderGelsGrid();
+            showToast("Gel eliminado del catálogo");
+          }
+        }
+      );
+    }
+
+    // -------------------------------------------------------------------------
+    // MODAL DE CONFIRMACIÓN PERSONALIZADO
+    // -------------------------------------------------------------------------
+    function openConfirmModal(title, message, onAccept) {
+      document.getElementById("confirm-title").textContent = title;
+      document.getElementById("confirm-message").textContent = message;
+      pendingConfirmAction = onAccept;
+
+      const acceptBtn = document.getElementById("confirm-accept-btn");
+      acceptBtn.onclick = async () => {
+        if (typeof pendingConfirmAction === "function") {
+          await pendingConfirmAction();
+        }
+        closeConfirmModal();
+      };
+
+      document.getElementById("confirm-modal").classList.remove("hidden");
+    }
+
+    function closeConfirmModal() {
+      document.getElementById("confirm-modal").classList.add("hidden");
+      pendingConfirmAction = null;
+    }
+
+    // -------------------------------------------------------------------------
+    // MODAL CONFIGURAR FIREBASE
+    // -------------------------------------------------------------------------
+    function openFirebaseModal() {
+      const active = resolveActiveFirebaseConfig() || DEFAULT_FIREBASE_CONFIG;
+      document.getElementById("fb-apiKey").value = active.apiKey !== "TU_API_KEY" ? active.apiKey : "";
+      document.getElementById("fb-authDomain").value = active.authDomain !== "TU_PROYECTO.firebaseapp.com" ? active.authDomain : "";
+      document.getElementById("fb-projectId").value = active.projectId !== "TU_PROJECT_ID" ? active.projectId : "";
+      document.getElementById("fb-storageBucket").value = active.storageBucket !== "TU_PROYECTO.appspot.com" ? active.storageBucket : "";
+      document.getElementById("fb-messagingSenderId").value = active.messagingSenderId !== "TU_MESSAGING_SENDER_ID" ? active.messagingSenderId : "";
+      document.getElementById("fb-appId").value = active.appId !== "TU_APP_ID" ? active.appId : "";
+      document.getElementById("firebase-modal").classList.remove("hidden");
+    }
+
+    function closeFirebaseModal() {
+      document.getElementById("firebase-modal").classList.add("hidden");
+    }
+
+    async function handleSaveFirebaseConfig(event) {
+      event.preventDefault();
+      const customConfig = {
+        apiKey: document.getElementById("fb-apiKey").value.trim(),
+        authDomain: document.getElementById("fb-authDomain").value.trim(),
+        projectId: document.getElementById("fb-projectId").value.trim(),
+        storageBucket: document.getElementById("fb-storageBucket").value.trim(),
+        messagingSenderId: document.getElementById("fb-messagingSenderId").value.trim(),
+        appId: document.getElementById("fb-appId").value.trim()
+      };
+
+      try {
+        localStorage.setItem(STORAGE_KEYS.FIREBASE_CONFIG, JSON.stringify(customConfig));
+      } catch (e) {}
+
+      closeFirebaseModal();
+      await initBackend();
+      if (isFirebaseActive) {
+        showToast("¡Conectado a Firebase Cloud!");
+      }
+    }
+
+    async function resetFirebaseToLocal() {
+      try {
+        localStorage.removeItem(STORAGE_KEYS.FIREBASE_CONFIG);
+      } catch (e) {}
+      closeFirebaseModal();
+      await initBackend();
+      showToast("Modo Local activo");
+    }
+
+    // -------------------------------------------------------------------------
+    // UTILIDADES GENERALES (BACKDROP, ESCAPE, TOAST)
+    // -------------------------------------------------------------------------
+    function handleBackdropClick(event, modalId) {
+      if (event.target.id === modalId) {
+        document.getElementById(modalId).classList.add("hidden");
+      }
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      document.getElementById("toast-message").textContent = message;
+
+      toast.classList.remove("translate-y-16", "opacity-0");
+      toast.classList.add("translate-y-0", "opacity-100");
+
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove("translate-y-0", "opacity-100");
+        toast.classList.add("translate-y-16", "opacity-0");
+      }, 3300);
+    }
+
+    // Exponer funciones al ámbito global window
+    Object.assign(window, {
+      switchAuthTab,
+      updateRoleSelectorStyles,
+      handleLogin,
+      handleRegister,
+      quickEnter,
+      handleLogout,
+      switchOwnerSection,
+      handleSearch,
+      clearSearch,
+      openDetailModal,
+      closeDetailModal,
+      adjustOrderQuantity,
+      handlePlaceOrder,
+      setOrdersFilter,
+      toggleOrderStatus,
+      requestDeleteOrder,
+      openFormModal,
+      closeFormModal,
+      switchImageInputMode,
+      handleFileUpload,
+      handleUrlPreview,
+      handleSaveGel,
+      requestDeleteGel,
+      closeConfirmModal,
+      openFirebaseModal,
+      closeFirebaseModal,
+      handleSaveFirebaseConfig,
+      resetFirebaseToLocal,
+      handleBackdropClick
+    });
+
+    // Cerrar modales con tecla Escape
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeDetailModal();
+        closeFormModal();
+        closeFirebaseModal();
+        closeConfirmModal();
+      }
+    });
+
+    // Inicializar aplicación al cargar
+    initBackend();
+  </script>
+</body>
+</html>

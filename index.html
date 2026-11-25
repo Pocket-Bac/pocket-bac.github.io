@@ -3,15 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PocketBac — Boutique de Geles Antibacteriales</title>
+  <title>PocketBac — Boutique de Geles Antibacteriales y Aromáticos</title>
 
   <!-- Tipografías Google Fonts: Quicksand (marca y títulos) y Plus Jakarta Sans (interfaz) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet" />
-
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -24,10 +21,12 @@
           colors: {
             pastel: {
               blush: '#FFF0F5',
+              blushAlt: '#FFE4EC',
               soft: '#FADADD',
               rose: '#F8C8DC',
               petal: '#F4A6C1',
               berry: '#E77A9E',
+              crimson: '#D45D87',
               deep: '#9B375B',
               ink: '#5E223A',
             }
@@ -104,20 +103,6 @@
   <!-- ===================================================================== -->
   <section id="auth-view" class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6">
     <div class="w-full max-w-md">
-
-      <!-- Barra superior discreta: Estado de Firebase y Botón Configurar -->
-      <div class="flex justify-center mb-5">
-        <button
-          type="button"
-          onclick="openFirebaseModal()"
-          title="Configurar conexión con Firebase"
-          class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/95 border border-pastel-rose shadow-sm hover:border-pastel-berry transition text-xs font-semibold text-pastel-deep"
-        >
-          <span id="auth-status-dot" class="w-2 h-2 rounded-full bg-pastel-petal"></span>
-          <span id="auth-status-text">Modo Local activo</span>
-          <span class="text-pastel-berry underline ml-1">Configurar Firebase</span>
-        </button>
-      </div>
 
       <!-- Logotipo Artesanal SVG PocketBac -->
       <div class="text-center mb-6">
@@ -379,16 +364,6 @@
                 <span class="font-brand text-xl sm:text-2xl font-bold text-pastel-deep leading-none">
                   Pocket<span class="text-pastel-berry">Bac</span>
                 </span>
-                <!-- Indicador Firebase / Local -->
-                <button
-                  type="button"
-                  onclick="openFirebaseModal()"
-                  title="Configurar conexión con Firebase"
-                  class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-pastel-blush border border-pastel-rose text-[11px] font-semibold text-pastel-deep hover:bg-pastel-soft transition"
-                >
-                  <span id="nav-status-dot" class="w-1.5 h-1.5 rounded-full bg-pastel-petal"></span>
-                  <span id="nav-status-text">Modo Local</span>
-                </button>
               </div>
               <span class="text-[11px] uppercase tracking-widest text-pastel-berry font-semibold block mt-0.5">
                 Boutique de Geles Antibacteriales
@@ -401,16 +376,16 @@
             <button
               type="button"
               id="nav-tab-catalog"
-              onclick="switchOwnerSection('catalog')"
+              onclick="switchSection('catalog')"
               class="px-4 py-2 rounded-full text-xs sm:text-sm font-brand font-bold transition-all duration-200 bg-white text-pastel-deep shadow-sm flex items-center gap-1.5"
             >
               <span>🧴</span>
-              <span>Catálogo de Geles</span>
+              <span>Catálogo</span>
             </button>
             <button
               type="button"
               id="nav-tab-orders"
-              onclick="switchOwnerSection('orders')"
+              onclick="switchSection('orders')"
               class="px-4 py-2 rounded-full text-xs sm:text-sm font-brand font-bold transition-all duration-200 text-pastel-berry hover:text-pastel-deep flex items-center gap-1.5"
             >
               <span>📬</span>
@@ -424,7 +399,35 @@
             </button>
           </nav>
 
-          <!-- Perfil de Usuario con Insignia de Rol + Botones de Acción -->
+          <!-- Navegación Exclusiva de Pestañas para VISITANTE -->
+          <nav id="visitor-nav-tabs" class="hidden order-3 lg:order-2 flex items-center bg-pastel-blush p-1 rounded-full border border-pastel-soft">
+            <button
+              type="button"
+              id="visitor-tab-catalog"
+              onclick="switchSection('catalog')"
+              class="px-4 py-2 rounded-full text-xs sm:text-sm font-brand font-bold transition-all duration-200 bg-white text-pastel-deep shadow-sm flex items-center gap-1.5"
+            >
+              <span>🧴</span>
+              <span>Catálogo</span>
+            </button>
+            <button
+              type="button"
+              id="visitor-tab-my-orders"
+              onclick="switchSection('my-orders')"
+              class="px-4 py-2 rounded-full text-xs sm:text-sm font-brand font-bold transition-all duration-200 text-pastel-berry hover:text-pastel-deep flex items-center gap-1.5"
+            >
+              <span>🛍️</span>
+              <span>Mis Pedidos</span>
+              <span
+                id="visitor-orders-badge"
+                class="ml-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-pastel-rose text-pastel-deep transition"
+              >
+                0
+              </span>
+            </button>
+          </nav>
+
+          <!-- Perfil de Usuario con Insignia de Rol + Botón Cerrar Sesión -->
           <div class="order-2 lg:order-3 flex items-center gap-2 sm:gap-2.5">
             <!-- Insignia de Usuario y Rol -->
             <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-pastel-blush border border-pastel-rose">
@@ -436,30 +439,18 @@
               </span>
             </div>
 
-            <!-- Botón Configurar Firebase -->
-            <button
-              type="button"
-              onclick="openFirebaseModal()"
-              title="Configurar Firebase"
-              class="p-2.5 rounded-full bg-pastel-blush hover:bg-pastel-soft border border-pastel-rose text-pastel-berry hover:text-pastel-deep transition"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
-              </svg>
-            </button>
-
             <!-- Botón Cerrar Sesión -->
             <button
               type="button"
               onclick="handleLogout()"
               title="Cerrar sesión"
               aria-label="Cerrar sesión"
-              class="py-2 px-3 rounded-full bg-white hover:bg-pastel-blush text-pastel-berry hover:text-pastel-deep border border-pastel-soft text-xs font-semibold flex items-center gap-1.5 transition"
+              class="py-2 px-3.5 rounded-full bg-white hover:bg-pastel-blush text-pastel-berry hover:text-pastel-deep border border-pastel-soft text-xs font-semibold flex items-center gap-1.5 transition"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
-              <span class="hidden sm:inline">Salir</span>
+              <span>Cerrar Sesión</span>
             </button>
           </div>
 
@@ -489,8 +480,8 @@
           </div>
 
           <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <!-- Buscador por Nombre o Aroma -->
-            <div class="relative w-full sm:w-72">
+            <!-- Buscador por Nombre, Aroma o Ingredientes -->
+            <div class="relative w-full sm:w-80">
               <span class="absolute inset-y-0 left-3.5 flex items-center pointer-events-none text-pastel-berry">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -500,7 +491,7 @@
                 type="text"
                 id="search-input"
                 oninput="handleSearch(this.value)"
-                placeholder="Buscar por nombre o aroma..."
+                placeholder="Buscar por nombre, aroma o ingredientes..."
                 class="w-full pl-10 pr-9 py-2.5 rounded-full bg-pastel-blush/80 border border-pastel-soft text-sm text-pastel-ink placeholder-pastel-petal focus:outline-none focus:bg-white focus:border-pastel-berry focus:ring-2 focus:ring-pastel-rose/40 transition"
               />
               <button
@@ -557,7 +548,7 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
           </svg>
-          <span>Añadir Primer Gel</span>
+          <span>+ Añadir mi primer gel</span>
         </button>
       </div>
 
@@ -674,11 +665,56 @@
 
     </main>
 
+    <!-- =================================================================== -->
+    <!-- SECCIÓN C: MIS PEDIDOS (EXCLUSIVA PARA CUENTA VISITANTE)            -->
+    <!-- =================================================================== -->
+    <main id="my-orders-section" class="hidden flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+      <div class="bg-white rounded-3xl p-6 sm:p-7 mb-6 border border-pastel-soft shadow-card">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pastel-blush border border-pastel-rose text-pastel-berry text-xs font-semibold mb-2">
+          <span>🛍️</span>
+          <span>Historial de Solicitudes</span>
+        </span>
+        <h2 class="font-brand text-2xl sm:text-3xl font-bold text-pastel-deep">
+          Mis Pedidos en PocketBac
+        </h2>
+        <p class="text-sm text-pastel-berry mt-1">
+          Consulta aquí los geles que has solicitado al dueño y el estado actual de cada pedido.
+        </p>
+      </div>
+
+      <!-- Estado Vacío de Mis Pedidos -->
+      <div id="empty-my-orders-state" class="bg-white rounded-3xl p-12 text-center border-2 border-dashed border-pastel-rose shadow-card max-w-xl mx-auto my-6">
+        <div class="w-16 h-16 rounded-full bg-pastel-blush border border-pastel-soft text-pastel-berry mx-auto flex items-center justify-center mb-4 text-2xl">
+          🛍️
+        </div>
+        <h3 class="font-brand text-xl font-bold text-pastel-deep">
+          Todavía no has realizado ningún pedido
+        </h3>
+        <p class="text-sm text-pastel-berry mt-1.5 mb-6 leading-relaxed">
+          Explora nuestro catálogo de geles, haz clic sobre el que más te guste y pulsa <strong>"Pedir este Gel"</strong> para enviárselo al dueño.
+        </p>
+        <button
+          type="button"
+          onclick="switchSection('catalog')"
+          class="px-6 py-2.5 rounded-full bg-pastel-rose hover:bg-pastel-berry text-pastel-deep hover:text-white font-brand font-bold text-sm shadow-card transition"
+        >
+          Ir al Catálogo
+        </button>
+      </div>
+
+      <!-- Listado de Mis Pedidos -->
+      <div id="my-orders-list" class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <!-- Tarjetas de pedidos del visitante -->
+      </div>
+
+    </main>
+
     <!-- Pie de Página -->
     <footer class="bg-white border-t border-pastel-soft py-5 mt-12">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-pastel-berry">
         <p class="font-brand font-bold text-pastel-deep">PocketBac — Boutique de Geles Antibacteriales &amp; Aromáticos</p>
-        <p id="footer-sync-info">Modo Local activo. Conecta Firebase para sincronización en tiempo real.</p>
+        <p>Catálogo interactivo sincronizado en tiempo real.</p>
       </div>
     </footer>
 
@@ -754,98 +790,101 @@
           </div>
 
           <!-- =============================================================== -->
-          <!-- ZONA EXCLUSIVA VISITANTE: FORMULARIO PARA PEDIR EL GEL          -->
+          <!-- ZONA EXCLUSIVA VISITANTE: PEDIR ESTE GEL AL DUEÑO               -->
           <!-- =============================================================== -->
           <div id="visitor-order-box" class="hidden mt-6 pt-5 border-t border-pastel-soft">
-            <div class="bg-pastel-blush/90 border-2 border-pastel-rose rounded-2xl p-4">
-              <div class="flex items-center justify-between mb-3">
-                <span class="font-brand font-bold text-sm text-pastel-deep flex items-center gap-1.5">
-                  <span>🛍️</span>
-                  <span>Solicitar este gel al dueño</span>
-                </span>
-                <span class="text-[11px] font-semibold text-pastel-berry">Envío directo</span>
-              </div>
-
-              <!-- Confirmación visual tras enviar el pedido -->
-              <div id="order-success-banner" class="hidden mb-3 p-3.5 rounded-2xl bg-white border-2 border-emerald-300 text-emerald-800 text-xs leading-relaxed shadow-sm">
-                <p class="font-brand font-bold text-sm text-emerald-900 flex items-center gap-1.5">
-                  <span>✅</span>
-                  <span>¡Pedido enviado al dueño!</span>
-                </p>
-                <p class="mt-1">
-                  Tu solicitud quedó registrada a nombre de <strong id="order-confirmed-user"></strong>. El dueño podrá verla en su bandeja de pedidos.
-                </p>
-              </div>
-
-              <form id="visitor-order-form" onsubmit="handlePlaceOrder(event)" class="space-y-3">
-                <div class="flex items-center justify-between gap-3 bg-white px-3.5 py-2 rounded-xl border border-pastel-soft">
-                  <label for="order-quantity" class="text-xs font-bold uppercase tracking-wider text-pastel-berry">
-                    Cantidad
-                  </label>
-                  <div class="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onclick="adjustOrderQuantity(-1)"
-                      aria-label="Disminuir cantidad"
-                      class="w-7 h-7 rounded-lg bg-pastel-blush hover:bg-pastel-rose text-pastel-deep font-bold flex items-center justify-center transition"
-                    >
-                      -
-                    </button>
-                    <input
-                      type="number"
-                      id="order-quantity"
-                      value="1"
-                      min="1"
-                      max="99"
-                      required
-                      class="w-12 text-center font-brand font-bold text-sm text-pastel-deep bg-transparent focus:outline-none"
-                    />
-                    <button
-                      type="button"
-                      onclick="adjustOrderQuantity(1)"
-                      aria-label="Aumentar cantidad"
-                      class="w-7 h-7 rounded-lg bg-pastel-blush hover:bg-pastel-rose text-pastel-deep font-bold flex items-center justify-center transition"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <input
-                    type="text"
-                    id="order-note"
-                    maxlength="180"
-                    placeholder="Nota opcional para el dueño (ej. horario o detalle)..."
-                    class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-pastel-soft text-xs text-pastel-ink placeholder-pastel-petal focus:outline-none focus:border-pastel-berry"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  id="submit-order-btn"
-                  class="w-full py-3 px-5 rounded-2xl bg-pastel-berry hover:bg-pastel-deep text-white font-brand font-bold text-sm shadow-card transition-all duration-200 flex items-center justify-center gap-2 active:scale-[0.99]"
-                >
-                  <span>✨ Pedir este Gel</span>
-                </button>
-              </form>
+            <!-- Confirmación visual tras enviar pedido -->
+            <div id="order-success-banner" class="hidden mb-4 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs leading-relaxed">
+              <p class="font-brand font-bold text-sm text-emerald-900 flex items-center gap-1.5">
+                <span>✅</span>
+                <span>¡Solicitud enviada al dueño!</span>
+              </p>
+              <p class="mt-1">
+                Tu pedido quedó registrado a nombre de <strong id="order-confirmed-user"></strong>. Puedes revisar su estado en <strong>Mis Pedidos</strong>.
+              </p>
             </div>
+
+            <form id="visitor-order-form" onsubmit="handlePlaceOrder(event)" class="bg-pastel-blush/80 border border-pastel-rose rounded-2xl p-4 space-y-3">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-pastel-deep">
+                  Solicitar este Gel
+                </span>
+                <div class="flex items-center gap-1.5 bg-white border border-pastel-rose rounded-full px-2 py-1">
+                  <button
+                    type="button"
+                    onclick="adjustOrderQuantity(-1)"
+                    aria-label="Disminuir cantidad"
+                    class="w-6 h-6 rounded-full bg-pastel-blush hover:bg-pastel-soft text-pastel-deep font-bold text-sm flex items-center justify-center transition"
+                  >
+                    −
+                  </button>
+                  <input
+                    type="number"
+                    id="order-quantity"
+                    value="1"
+                    min="1"
+                    max="99"
+                    required
+                    class="w-10 text-center text-xs font-bold text-pastel-deep bg-transparent focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onclick="adjustOrderQuantity(1)"
+                    aria-label="Aumentar cantidad"
+                    class="w-6 h-6 rounded-full bg-pastel-blush hover:bg-pastel-soft text-pastel-deep font-bold text-sm flex items-center justify-center transition"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <input
+                  type="text"
+                  id="order-note"
+                  maxlength="180"
+                  placeholder="Nota opcional para el dueño (ej. entrega en sucursal, regalo...)"
+                  class="w-full px-3.5 py-2 rounded-xl bg-white border border-pastel-soft text-xs text-pastel-ink placeholder-pastel-petal focus:outline-none focus:border-pastel-berry transition"
+                />
+              </div>
+
+              <button
+                type="submit"
+                id="place-order-btn"
+                class="w-full py-3 px-5 rounded-full bg-pastel-berry hover:bg-pastel-crimson text-white font-brand font-bold text-sm shadow-card transition-all duration-200 active:scale-[0.99]"
+              >
+                ✨ Pedir este Gel
+              </button>
+            </form>
           </div>
 
           <!-- =============================================================== -->
-          <!-- ZONA EXCLUSIVA DUEÑO: BOTÓN EDITAR Y CERRAR                     -->
+          <!-- ZONA EXCLUSIVA DUEÑO: BOTONES EDITAR, ELIMINAR Y CERRAR         -->
           <!-- =============================================================== -->
-          <div id="owner-detail-actions" class="hidden mt-6 pt-4 border-t border-pastel-soft flex flex-wrap items-center justify-between gap-3">
-            <button
-              type="button"
-              id="detail-edit-btn"
-              class="px-4 py-2.5 rounded-full bg-pastel-blush hover:bg-pastel-soft border border-pastel-rose text-pastel-deep font-brand font-bold text-xs sm:text-sm flex items-center gap-1.5 transition"
-            >
-              <svg class="w-4 h-4 text-pastel-berry" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-              <span>Editar Gel</span>
-            </button>
+          <div id="owner-detail-actions" class="hidden mt-6 pt-4 border-t border-pastel-soft flex flex-wrap items-center justify-between gap-2.5">
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                id="detail-edit-btn"
+                class="px-4 py-2.5 rounded-full bg-pastel-blush hover:bg-pastel-soft border border-pastel-rose text-pastel-deep font-brand font-bold text-xs sm:text-sm flex items-center gap-1.5 transition"
+              >
+                <svg class="w-4 h-4 text-pastel-berry" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                <span>Editar</span>
+              </button>
+
+              <button
+                type="button"
+                id="detail-delete-btn"
+                class="px-4 py-2.5 rounded-full bg-white hover:bg-rose-50 border border-pastel-soft text-pastel-berry hover:text-rose-700 font-brand font-bold text-xs sm:text-sm flex items-center gap-1.5 transition"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                <span>Eliminar</span>
+              </button>
+            </div>
 
             <button
               type="button"
@@ -984,7 +1023,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                   <span class="text-xs font-semibold text-pastel-deep">Seleccionar foto</span>
-                  <span class="text-[11px] text-pastel-berry">PNG, JPG o WEBP</span>
+                  <span class="text-[11px] text-pastel-berry">PNG, JPG o WEBP (&lt; 150 KB)</span>
                   <input type="file" id="gel-image-file" accept="image/*" onchange="handleFileUpload(event)" class="hidden" />
                 </label>
               </div>
@@ -1034,95 +1073,7 @@
   </div>
 
   <!-- ===================================================================== -->
-  <!-- 5. MODAL CONFIGURAR FIREBASE                                          -->
-  <!-- ===================================================================== -->
-  <div
-    id="firebase-modal"
-    class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-pastel-ink/40 backdrop-blur-sm"
-    onclick="handleBackdropClick(event, 'firebase-modal')"
-    role="dialog"
-    aria-modal="true"
-  >
-    <div class="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl border-2 border-pastel-soft animate-modal">
-      <div class="px-6 py-4 bg-pastel-blush border-b border-pastel-soft flex items-center justify-between">
-        <div>
-          <span class="text-[11px] uppercase tracking-widest text-pastel-berry font-bold">Nube &amp; Tiempo Real</span>
-          <h3 class="font-brand text-xl font-bold text-pastel-deep">Configurar Firebase</h3>
-        </div>
-        <button
-          type="button"
-          onclick="closeFirebaseModal()"
-          aria-label="Cerrar configuración Firebase"
-          class="w-9 h-9 rounded-full bg-white hover:bg-pastel-soft text-pastel-berry hover:text-pastel-deep border border-pastel-soft flex items-center justify-center transition"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-
-      <form onsubmit="handleSaveFirebaseConfig(event)" class="p-6 space-y-3.5">
-        <p class="text-xs text-pastel-berry leading-relaxed bg-pastel-blush/80 p-3.5 rounded-2xl border border-pastel-soft">
-          Conecta tu proyecto de <strong>Firebase Console</strong> para sincronizar en tiempo real las colecciones <code class="font-mono text-pastel-deep font-semibold">pocketbac_usuarios</code>, <code class="font-mono text-pastel-deep font-semibold">pocketbac_geles</code> y <code class="font-mono text-pastel-deep font-semibold">pocketbac_pedidos</code>.
-        </p>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label class="block text-[11px] font-bold uppercase text-pastel-berry mb-1">apiKey *</label>
-            <input type="text" id="fb-apiKey" required placeholder="AIzaSy..." class="w-full px-3.5 py-2 rounded-xl bg-pastel-blush/50 border border-pastel-soft text-xs text-pastel-ink focus:outline-none focus:bg-white focus:border-pastel-berry" />
-          </div>
-          <div>
-            <label class="block text-[11px] font-bold uppercase text-pastel-berry mb-1">authDomain *</label>
-            <input type="text" id="fb-authDomain" required placeholder="tu-app.firebaseapp.com" class="w-full px-3.5 py-2 rounded-xl bg-pastel-blush/50 border border-pastel-soft text-xs text-pastel-ink focus:outline-none focus:bg-white focus:border-pastel-berry" />
-          </div>
-          <div>
-            <label class="block text-[11px] font-bold uppercase text-pastel-berry mb-1">projectId *</label>
-            <input type="text" id="fb-projectId" required placeholder="tu-proyecto-id" class="w-full px-3.5 py-2 rounded-xl bg-pastel-blush/50 border border-pastel-soft text-xs text-pastel-ink focus:outline-none focus:bg-white focus:border-pastel-berry" />
-          </div>
-          <div>
-            <label class="block text-[11px] font-bold uppercase text-pastel-berry mb-1">storageBucket</label>
-            <input type="text" id="fb-storageBucket" placeholder="tu-app.appspot.com" class="w-full px-3.5 py-2 rounded-xl bg-pastel-blush/50 border border-pastel-soft text-xs text-pastel-ink focus:outline-none focus:bg-white focus:border-pastel-berry" />
-          </div>
-          <div>
-            <label class="block text-[11px] font-bold uppercase text-pastel-berry mb-1">messagingSenderId</label>
-            <input type="text" id="fb-messagingSenderId" placeholder="1234567890" class="w-full px-3.5 py-2 rounded-xl bg-pastel-blush/50 border border-pastel-soft text-xs text-pastel-ink focus:outline-none focus:bg-white focus:border-pastel-berry" />
-          </div>
-          <div>
-            <label class="block text-[11px] font-bold uppercase text-pastel-berry mb-1">appId *</label>
-            <input type="text" id="fb-appId" required placeholder="1:12345:web:abcdef" class="w-full px-3.5 py-2 rounded-xl bg-pastel-blush/50 border border-pastel-soft text-xs text-pastel-ink focus:outline-none focus:bg-white focus:border-pastel-berry" />
-          </div>
-        </div>
-
-        <div class="pt-3 flex flex-wrap items-center justify-between gap-2 border-t border-pastel-soft">
-          <button
-            type="button"
-            onclick="resetFirebaseToLocal()"
-            class="px-4 py-2 rounded-full bg-pastel-blush hover:bg-pastel-soft text-pastel-berry text-xs font-semibold transition"
-          >
-            Usar Modo Local
-          </button>
-          <div class="flex items-center gap-2">
-            <button
-              type="button"
-              onclick="closeFirebaseModal()"
-              class="px-4 py-2 rounded-full bg-white border border-pastel-soft text-pastel-berry text-xs font-semibold hover:bg-pastel-blush transition"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              class="px-5 py-2 rounded-full bg-pastel-rose hover:bg-pastel-berry text-pastel-deep hover:text-white font-brand font-bold text-xs shadow-card transition"
-            >
-              Guardar y Conectar
-            </button>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ===================================================================== -->
-  <!-- 6. MODAL DE CONFIRMACIÓN PERSONALIZADO                                -->
+  <!-- 5. MODAL DE CONFIRMACIÓN PERSONALIZADO                                -->
   <!-- ===================================================================== -->
   <div
     id="confirm-modal"
@@ -1159,7 +1110,7 @@
   </div>
 
   <!-- ===================================================================== -->
-  <!-- 7. NOTIFICACIÓN FLOTANTE (TOAST)                                      -->
+  <!-- 6. NOTIFICACIÓN FLOTANTE (TOAST)                                      -->
   <!-- ===================================================================== -->
   <div
     id="toast"
@@ -1176,35 +1127,30 @@
   </div>
 
   <!-- ===================================================================== -->
-  <!-- 8. SCRIPT MODULAR: FIREBASE v10.12.2 + SISTEMA DUEÑO Y VISITANTE      -->
+  <!-- 7. LÓGICA JAVASCRIPT PURA (100% LOCALSTORAGE + SINCRONIZACIÓN TABS)   -->
+  <!-- ===================================================================== -->
+  <!-- 7. MÓDULO CLOUD FIRESTORE v10.12.2 + RESPALDO SILENCIOSO LOCAL        -->
   <!-- ===================================================================== -->
   <script type="module">
-    import { initializeApp, getApps, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import {
-      getAuth,
-      signInWithEmailAndPassword,
-      createUserWithEmailAndPassword,
-      signOut,
-      onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import {
       getFirestore,
       collection,
+      doc,
+      setDoc,
       addDoc,
       updateDoc,
       deleteDoc,
-      doc,
-      setDoc,
-      getDoc,
+      getDocs,
       onSnapshot,
-      query,
-      orderBy
+      serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     // =========================================================================
-    // CONFIGURACIÓN POR DEFECTO DE FIREBASE
-    // Rellena estos valores si subes la página a GitHub Pages u otro hosting,
-    // o configúralos directamente desde el botón "Configurar Firebase" en pantalla.
+    // CONFIGURACIÓN DE FIREBASE (Pega aquí las credenciales de Firebase Console)
+    // Mientras conserve "TU_API_KEY", la tienda funcionará silenciosamente con
+    // almacenamiento local y cambiará automáticamente a Cloud Firestore en vivo
+    // en cuanto se ingresen las credenciales reales.
     // =========================================================================
     const firebaseConfig = {
   apiKey: "AIzaSyA3_sGVXTLsLud1_6jJjwfd_WIL3LcPelM",
@@ -1215,32 +1161,35 @@
   appId: "1:810491278335:web:43b57e8b226657d027edca"
 };
 
-    // Claves de almacenamiento local (localStorage)
-    const STORAGE_KEYS = {
-      FIREBASE_CONFIG: "pocketbac_firebase_config",
-      LOCAL_USERS: "pocketbac_local_users_v2",
-      LOCAL_SESSION: "pocketbac_local_session_v2",
-      LOCAL_GELS: "pocketbac_local_gels_v2",
-      LOCAL_ORDERS: "pocketbac_local_orders_v2"
+    // Nombres de las colecciones en Cloud Firestore
+    const COLLECTIONS = {
+      USERS: "pocketbac_usuarios",
+      GELS: "pocketbac_geles",
+      ORDERS: "pocketbac_pedidos"
     };
 
-    // Estado de conexión y sesión actual
-    let isFirebaseActive = false;
-    let firebaseApp = null;
-    let auth = null;
-    let db = null;
-    let unsubscribeGels = null;
-    let unsubscribeOrders = null;
+    // Claves de respaldo silencioso en localStorage
+    const STORAGE_KEYS = {
+      LOCAL_USERS: "pocketbac_local_users_v4",
+      LOCAL_SESSION: "pocketbac_local_session_v4",
+      LOCAL_GELS: "pocketbac_local_gels_v4",
+      LOCAL_ORDERS: "pocketbac_local_orders_v4"
+    };
 
-    // Sesión activa: { uid, name, email, role: 'dueno' | 'visitante', isQuickDemo }
+    // Estado de conexión a Cloud Firestore
+    let db = null;
+    let useFirestore = false;
+
+    // Sesión activa: { uid, name, email, role: 'dueno' | 'visitante' }
     let currentUser = null;
 
-    // Catálogo (inicia COMPLETAMENTE VACÍO: 0 geles de prueba) y Pedidos
+    // Colecciones sincronizadas en memoria (Catálogo inicia VACÍO: 0 productos)
+    let usersCatalog = [];
     let gelsCatalog = [];
     let ordersList = [];
 
     // Estado de interfaz
-    let currentOwnerSection = "catalog"; // 'catalog' | 'orders'
+    let currentSection = "catalog"; // 'catalog' | 'orders' | 'my-orders'
     let currentOrdersFilter = "all"; // 'all' | 'pendiente' | 'atendido'
     let currentSearchQuery = "";
     let currentDraftImage = "default:bottle";
@@ -1249,126 +1198,129 @@
     let toastTimer = null;
 
     // -------------------------------------------------------------------------
-    // INICIALIZACIÓN DE FIREBASE CON RESPALDO AUTOMÁTICO EN LOCALSTORAGE
+    // VERIFICACIÓN E INICIALIZACIÓN AUTOMÁTICA DE CLOUD FIRESTORE
     // -------------------------------------------------------------------------
-    function resolveActiveFirebaseConfig() {
-      if (DEFAULT_FIREBASE_CONFIG.apiKey && DEFAULT_FIREBASE_CONFIG.apiKey !== "TU_API_KEY") {
-        return DEFAULT_FIREBASE_CONFIG;
-      }
-      try {
-        const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.FIREBASE_CONFIG));
-        if (saved && saved.apiKey && saved.apiKey !== "TU_API_KEY") {
-          return saved;
-        }
-      } catch (e) {}
-      return null;
+    function isFirebaseConfigured() {
+      return Boolean(
+        FIREBASE_CONFIG &&
+        typeof FIREBASE_CONFIG.apiKey === "string" &&
+        FIREBASE_CONFIG.apiKey.trim() !== "" &&
+        FIREBASE_CONFIG.apiKey !== "TU_API_KEY" &&
+        typeof FIREBASE_CONFIG.projectId === "string" &&
+        FIREBASE_CONFIG.projectId.trim() !== "" &&
+        FIREBASE_CONFIG.projectId !== "TU_PROYECTO"
+      );
     }
 
-    async function initBackend() {
-      const activeConfig = resolveActiveFirebaseConfig();
-
-      if (unsubscribeGels) {
-        unsubscribeGels();
-        unsubscribeGels = null;
-      }
-      if (unsubscribeOrders) {
-        unsubscribeOrders();
-        unsubscribeOrders = null;
-      }
-
-      if (activeConfig) {
-        try {
-          if (getApps().length > 0) {
-            for (const existingApp of getApps()) {
-              await deleteApp(existingApp);
-            }
-          }
-
-          firebaseApp = initializeApp(activeConfig);
-          auth = getAuth(firebaseApp);
-          db = getFirestore(firebaseApp);
-          isFirebaseActive = true;
-
-          updateConnectionBadges(true, activeConfig.projectId);
-          setupFirebaseAuthListener();
-          subscribeToFirestoreCollections();
-          return;
-        } catch (err) {
-          console.error("No se pudo iniciar Firebase, cambiando a Modo Local:", err);
-          isFirebaseActive = false;
-          showToast("No se pudo conectar con Firebase. Usando Modo Local.");
-        }
-      }
-
-      // Modo Local de respaldo
-      isFirebaseActive = false;
-      updateConnectionBadges(false);
+    function initApp() {
+      // Cargar respaldo local primero para arranque instantáneo sin parpadeos
+      usersCatalog = getLocalUsers();
       loadLocalGels();
       loadLocalOrders();
-      checkLocalSession();
-    }
 
-    function updateConnectionBadges(connected, projectId = "") {
-      const authDot = document.getElementById("auth-status-dot");
-      const authText = document.getElementById("auth-status-text");
-      const navDot = document.getElementById("nav-status-dot");
-      const navText = document.getElementById("nav-status-text");
-      const footerInfo = document.getElementById("footer-sync-info");
-
-      if (connected) {
-        authDot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
-        authText.textContent = `Firebase Cloud (${projectId || "Conectado"})`;
-        navDot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse";
-        navText.textContent = "Firebase Cloud";
-        footerInfo.textContent = `Sincronizado en tiempo real con Cloud Firestore (${projectId}).`;
-      } else {
-        authDot.className = "w-2 h-2 rounded-full bg-pastel-petal";
-        authText.textContent = "Modo Local activo";
-        navDot.className = "w-1.5 h-1.5 rounded-full bg-pastel-petal";
-        navText.textContent = "Modo Local";
-        footerInfo.textContent = "Modo Local activo. Configura Firebase cuando desees sincronizar en la nube.";
+      if (isFirebaseConfigured()) {
+        try {
+          const app = getApps().length ? getApp() : initializeApp(FIREBASE_CONFIG);
+          db = getFirestore(app);
+          useFirestore = true;
+          subscribeToFirestoreCollections();
+        } catch (err) {
+          console.warn("Respaldo local activo por error inicializando Firestore:", err);
+          useFirestore = false;
+        }
       }
+
+      checkLocalSession();
+
+      // Sincronización automática entre pestañas si se usa el respaldo local
+      window.addEventListener("storage", (event) => {
+        if (useFirestore) return;
+        if (event.key === STORAGE_KEYS.LOCAL_GELS) {
+          loadLocalGels();
+          if (activeDetailGel && !gelsCatalog.some((g) => g.id === activeDetailGel.id)) {
+            closeDetailModal();
+          }
+        }
+        if (event.key === STORAGE_KEYS.LOCAL_ORDERS) {
+          loadLocalOrders();
+        }
+        if (event.key === STORAGE_KEYS.LOCAL_USERS) {
+          usersCatalog = getLocalUsers();
+        }
+      });
     }
 
-    // -------------------------------------------------------------------------
-    // SUSCRIPCIONES EN TIEMPO REAL (FIRESTORE: pocketbac_geles & pocketbac_pedidos)
-    // -------------------------------------------------------------------------
-    function subscribeToFirestoreCollections() {
-      if (!isFirebaseActive || !db) return;
+    function extractTimestampMs(item) {
+      if (!item) return 0;
+      if (typeof item.createdAtMs === "number") return item.createdAtMs;
+      if (item.createdAt && typeof item.createdAt.toMillis === "function") {
+        return item.createdAt.toMillis();
+      }
+      return 0;
+    }
 
-      // 1. Colección de Geles
-      const gelsQuery = query(collection(db, "pocketbac_geles"), orderBy("createdAt", "desc"));
-      unsubscribeGels = onSnapshot(
-        gelsQuery,
+    function subscribeToFirestoreCollections() {
+      if (!db) return;
+
+      // 1. Suscripción en tiempo real a "pocketbac_usuarios"
+      onSnapshot(
+        collection(db, COLLECTIONS.USERS),
         (snapshot) => {
-          const items = [];
-          snapshot.forEach((docSnap) => {
-            items.push({ id: docSnap.id, ...docSnap.data() });
-          });
-          gelsCatalog = items;
-          renderGelsGrid();
+          usersCatalog = snapshot.docs.map((docSnap) => ({
+            id: docSnap.id,
+            ...docSnap.data()
+          }));
+          try {
+            localStorage.setItem(STORAGE_KEYS.LOCAL_USERS, JSON.stringify(usersCatalog));
+          } catch (e) {}
         },
         (error) => {
-          console.error("Error leyendo pocketbac_geles:", error);
-          showToast("Verifica los permisos de lectura en Firestore (pocketbac_geles).");
+          console.warn("Error leyendo pocketbac_usuarios en Firestore:", error);
+          useFirestore = false;
         }
       );
 
-      // 2. Colección de Pedidos de Visitantes
-      const ordersQuery = query(collection(db, "pocketbac_pedidos"), orderBy("createdAt", "desc"));
-      unsubscribeOrders = onSnapshot(
-        ordersQuery,
+      // 2. Suscripción en tiempo real a "pocketbac_geles"
+      onSnapshot(
+        collection(db, COLLECTIONS.GELS),
         (snapshot) => {
-          const items = [];
-          snapshot.forEach((docSnap) => {
-            items.push({ id: docSnap.id, ...docSnap.data() });
-          });
-          ordersList = items;
-          updatePendingOrdersCounter();
-          renderOrdersView();
+          const items = snapshot.docs.map((docSnap) => ({
+            id: docSnap.id,
+            ...docSnap.data()
+          }));
+          items.sort((a, b) => extractTimestampMs(b) - extractTimestampMs(a));
+          gelsCatalog = items;
+          saveLocalGels(true);
+          renderGelsGrid();
+
+          if (activeDetailGel && !gelsCatalog.some((g) => g.id === activeDetailGel.id)) {
+            closeDetailModal();
+          }
         },
         (error) => {
-          console.error("Error leyendo pocketbac_pedidos:", error);
+          console.warn("Error leyendo pocketbac_geles en Firestore:", error);
+          useFirestore = false;
+        }
+      );
+
+      // 3. Suscripción en tiempo real a "pocketbac_pedidos"
+      onSnapshot(
+        collection(db, COLLECTIONS.ORDERS),
+        (snapshot) => {
+          const items = snapshot.docs.map((docSnap) => ({
+            id: docSnap.id,
+            ...docSnap.data()
+          }));
+          items.sort((a, b) => extractTimestampMs(b) - extractTimestampMs(a));
+          ordersList = items;
+          saveLocalOrders();
+          updateOrdersCounters();
+          renderOrdersView();
+          renderVisitorOrdersView();
+        },
+        (error) => {
+          console.warn("Error leyendo pocketbac_pedidos en Firestore:", error);
+          useFirestore = false;
         }
       );
     }
@@ -1376,40 +1328,6 @@
     // -------------------------------------------------------------------------
     // AUTENTICACIÓN, ROLES (DUEÑO vs VISITANTE) Y ACCESO RÁPIDO
     // -------------------------------------------------------------------------
-    function setupFirebaseAuthListener() {
-      if (!auth) return;
-      onAuthStateChanged(auth, async (fbUser) => {
-        if (fbUser) {
-          // Obtener rol desde Firestore 'pocketbac_usuarios'
-          let role = "visitante";
-          let name = fbUser.displayName || fbUser.email.split("@")[0];
-
-          try {
-            const userDocRef = doc(db, "pocketbac_usuarios", fbUser.uid);
-            const userDocSnap = await getDoc(userDocRef);
-            if (userDocSnap.exists()) {
-              const data = userDocSnap.data();
-              role = data.role || "visitante";
-              name = data.name || name;
-            }
-          } catch (e) {
-            console.warn("No se pudo leer perfil en pocketbac_usuarios:", e);
-          }
-
-          enterStoreWithUser({
-            uid: fbUser.uid,
-            name,
-            email: fbUser.email,
-            role,
-            isQuickDemo: false
-          });
-        } else {
-          // Si hay una sesión rápida de prueba en localStorage, respetarla
-          checkLocalSession();
-        }
-      });
-    }
-
     function switchAuthTab(tab) {
       const loginTab = document.getElementById("tab-login");
       const registerTab = document.getElementById("tab-register");
@@ -1466,58 +1384,43 @@
 
       const email = document.getElementById("login-email").value.trim().toLowerCase();
       const password = document.getElementById("login-password").value;
+      const submitBtn = document.getElementById("login-submit-btn");
 
-      if (isFirebaseActive && auth) {
-        const btn = document.getElementById("login-submit-btn");
-        btn.disabled = true;
-        btn.textContent = "Iniciando sesión...";
-        try {
-          const cred = await signInWithEmailAndPassword(auth, email, password);
-          let role = "visitante";
-          let name = email.split("@")[0];
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Verificando...";
 
-          const userSnap = await getDoc(doc(db, "pocketbac_usuarios", cred.user.uid));
-          if (userSnap.exists()) {
-            const data = userSnap.data();
-            role = data.role || "visitante";
-            name = data.name || name;
+      try {
+        let usersPool = usersCatalog.length > 0 ? usersCatalog : getLocalUsers();
+
+        if (useFirestore && db) {
+          try {
+            const snap = await getDocs(collection(db, COLLECTIONS.USERS));
+            usersPool = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+            usersCatalog = usersPool;
+          } catch (err) {
+            console.warn("Usando caché local de usuarios:", err);
           }
-
-          enterStoreWithUser({
-            uid: cred.user.uid,
-            name,
-            email,
-            role,
-            isQuickDemo: false
-          });
-          showToast(`¡Bienvenida/o a PocketBac, ${name}!`);
-        } catch (err) {
-          showAuthAlert(mapFirebaseAuthError(err.code));
-        } finally {
-          btn.disabled = false;
-          btn.textContent = "Iniciar Sesión";
         }
-        return;
-      }
 
-      // Modo Local
-      const users = getLocalUsers();
-      const found = users.find((u) => u.email === email && u.password === password);
-      if (!found) {
-        showAuthAlert("Correo o contraseña incorrectos. Puedes crear una cuenta o usar los accesos rápidos.");
-        return;
-      }
+        const found = usersPool.find((u) => u.email === email && u.password === password);
+        if (!found) {
+          showAuthAlert("Correo o contraseña incorrectos. Puedes crear una cuenta o usar los accesos rápidos.");
+          return;
+        }
 
-      const sessionUser = {
-        uid: found.id,
-        name: found.name,
-        email: found.email,
-        role: found.role || "visitante",
-        isQuickDemo: false
-      };
-      saveLocalSession(sessionUser);
-      enterStoreWithUser(sessionUser);
-      showToast(`¡Hola de nuevo, ${found.name}!`);
+        const sessionUser = {
+          uid: found.id,
+          name: found.name,
+          email: found.email,
+          role: found.role || "visitante"
+        };
+        saveLocalSession(sessionUser);
+        enterStoreWithUser(sessionUser);
+        showToast(`¡Hola de nuevo, ${found.name}!`);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Iniciar Sesión";
+      }
     }
 
     async function handleRegister(event) {
@@ -1528,66 +1431,68 @@
       const email = document.getElementById("reg-email").value.trim().toLowerCase();
       const password = document.getElementById("reg-password").value;
       const role = document.querySelector('input[name="reg-role"]:checked')?.value || "visitante";
+      const submitBtn = document.getElementById("register-submit-btn");
 
-      if (isFirebaseActive && auth && db) {
-        const btn = document.getElementById("register-submit-btn");
-        btn.disabled = true;
-        btn.textContent = "Creando cuenta...";
-        try {
-          const cred = await createUserWithEmailAndPassword(auth, email, password);
-          await setDoc(doc(db, "pocketbac_usuarios", cred.user.uid), {
-            name,
-            email,
-            role,
-            createdAt: Date.now()
-          });
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Creando cuenta...";
 
-          enterStoreWithUser({
-            uid: cred.user.uid,
-            name,
-            email,
-            role,
-            isQuickDemo: false
-          });
-          showToast(`¡Cuenta de ${role === "dueno" ? "Dueño" : "Visitante"} creada!`);
-        } catch (err) {
-          showAuthAlert(mapFirebaseAuthError(err.code));
-        } finally {
-          btn.disabled = false;
-          btn.textContent = "Crear Cuenta";
-        }
-        return;
-      }
-
-      // Modo Local
-      const users = getLocalUsers();
-      if (users.some((u) => u.email === email)) {
-        showAuthAlert("Este correo electrónico ya está registrado.");
-        return;
-      }
-
-      const newUser = {
-        id: "user-" + Date.now(),
-        name,
-        email,
-        password,
-        role
-      };
-      users.push(newUser);
       try {
-        localStorage.setItem(STORAGE_KEYS.LOCAL_USERS, JSON.stringify(users));
-      } catch (e) {}
+        let usersPool = usersCatalog.length > 0 ? usersCatalog : getLocalUsers();
 
-      const sessionUser = {
-        uid: newUser.id,
-        name: newUser.name,
-        email: newUser.email,
-        role: newUser.role,
-        isQuickDemo: false
-      };
-      saveLocalSession(sessionUser);
-      enterStoreWithUser(sessionUser);
-      showToast(`¡Cuenta creada como ${role === "dueno" ? "Dueño" : "Visitante"}!`);
+        if (useFirestore && db) {
+          try {
+            const snap = await getDocs(collection(db, COLLECTIONS.USERS));
+            usersPool = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+            usersCatalog = usersPool;
+          } catch (err) {
+            console.warn("Verificando usuarios desde respaldo local:", err);
+          }
+        }
+
+        if (usersPool.some((u) => u.email === email)) {
+          showAuthAlert("Este correo electrónico ya está registrado.");
+          return;
+        }
+
+        const newUserId = "user-" + Date.now();
+        const newUser = {
+          id: newUserId,
+          name,
+          email,
+          password,
+          role,
+          createdAtMs: Date.now()
+        };
+
+        if (useFirestore && db) {
+          try {
+            await setDoc(doc(db, COLLECTIONS.USERS, newUserId), {
+              ...newUser,
+              createdAt: serverTimestamp()
+            });
+          } catch (err) {
+            console.warn("Guardando usuario en respaldo local:", err);
+          }
+        }
+
+        const updatedLocalUsers = [...getLocalUsers().filter((u) => u.email !== email), newUser];
+        try {
+          localStorage.setItem(STORAGE_KEYS.LOCAL_USERS, JSON.stringify(updatedLocalUsers));
+        } catch (e) {}
+
+        const sessionUser = {
+          uid: newUser.id,
+          name: newUser.name,
+          email: newUser.email,
+          role: newUser.role
+        };
+        saveLocalSession(sessionUser);
+        enterStoreWithUser(sessionUser);
+        showToast(`¡Cuenta creada como ${role === "dueno" ? "Dueño" : "Visitante"}!`);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Crear Cuenta";
+      }
     }
 
     function quickEnter(role) {
@@ -1597,15 +1502,13 @@
               uid: "demo-dueno",
               name: "Dueño PocketBac",
               email: "dueno@pocketbac.com",
-              role: "dueno",
-              isQuickDemo: true
+              role: "dueno"
             }
           : {
               uid: "demo-visitante",
               name: "Visitante Invitada",
               email: "visitante@pocketbac.com",
-              role: "visitante",
-              isQuickDemo: true
+              role: "visitante"
             };
 
       saveLocalSession(demoUser);
@@ -1617,17 +1520,11 @@
       );
     }
 
-    async function handleLogout() {
+    function handleLogout() {
       currentUser = null;
       try {
         localStorage.removeItem(STORAGE_KEYS.LOCAL_SESSION);
       } catch (e) {}
-
-      if (isFirebaseActive && auth && auth.currentUser) {
-        try {
-          await signOut(auth);
-        } catch (e) {}
-      }
 
       document.getElementById("store-view").classList.add("hidden");
       document.getElementById("auth-view").classList.remove("hidden");
@@ -1641,14 +1538,13 @@
       currentUser = userObj;
       const isOwner = userObj.role === "dueno";
 
-      // Actualizar insignia de rol y nombre en el header
       const roleBadge = document.getElementById("user-role-badge");
       const nameDisplay = document.getElementById("user-display-name");
       roleBadge.textContent = isOwner ? "👑 Dueño" : "🛍️ Visitante";
       nameDisplay.textContent = userObj.name;
 
-      // Mostrar / Ocultar controles exclusivos de Dueño
       const ownerNavTabs = document.getElementById("owner-nav-tabs");
+      const visitorNavTabs = document.getElementById("visitor-nav-tabs");
       const ownerAddGelBtn = document.getElementById("owner-add-gel-btn");
       const emptyAddBtn = document.getElementById("empty-catalog-add-btn");
       const emptyTitle = document.getElementById("empty-catalog-title");
@@ -1657,71 +1553,72 @@
 
       if (isOwner) {
         ownerNavTabs.classList.remove("hidden");
+        visitorNavTabs.classList.add("hidden");
         ownerAddGelBtn.classList.remove("hidden");
         emptyAddBtn.classList.remove("hidden");
         emptyTitle.textContent = "Tu boutique PocketBac está lista para estrenarse";
         emptyDesc.textContent =
           "Aún no hay geles registrados en la vitrina. Comienza agregando tu primer gel antibacterial con su foto, aroma, precio orientativo e ingredientes.";
         catalogSubtitle.textContent =
-          "Administra tus productos o haz clic en un gel para ver y editar su ficha completa.";
+          "Administra tus productos o haz clic en un gel para ver, editar o eliminar su ficha completa.";
       } else {
         ownerNavTabs.classList.add("hidden");
+        visitorNavTabs.classList.remove("hidden");
         ownerAddGelBtn.classList.add("hidden");
         emptyAddBtn.classList.add("hidden");
-        emptyTitle.textContent = "La boutique está preparando su nueva colección";
+        emptyTitle.textContent = "Aún no hay geles publicados en la tienda";
         emptyDesc.textContent =
-          "Aún no hay geles publicados en el catálogo. Vuelve pronto para descubrir nuestros aromas y hacer tu pedido.";
+          "El dueño todavía está preparando los geles de esta colección. Vuelve pronto para explorar aromas y hacer tu pedido.";
         catalogSubtitle.textContent =
           "Haz clic sobre la imagen de cualquier gel para ver su ficha completa y solicitarlo al dueño.";
       }
 
-      // Siempre abrir en la sección de catálogo al iniciar
-      switchOwnerSection("catalog");
+      switchSection("catalog");
 
       document.getElementById("auth-view").classList.add("hidden");
       document.getElementById("store-view").classList.remove("hidden");
 
       renderGelsGrid();
-      updatePendingOrdersCounter();
+      updateOrdersCounters();
       renderOrdersView();
+      renderVisitorOrdersView();
     }
 
-    function switchOwnerSection(section) {
-      // Un visitante nunca puede acceder a la sección de pedidos del dueño
-      if (currentUser?.role !== "dueno" && section === "orders") {
-        section = "catalog";
-      }
+    function switchSection(section) {
+      const isOwner = currentUser?.role === "dueno";
+      if (!isOwner && section === "orders") section = "catalog";
+      if (isOwner && section === "my-orders") section = "catalog";
 
-      currentOwnerSection = section;
+      currentSection = section;
+
       const catalogSec = document.getElementById("catalog-section");
       const ordersSec = document.getElementById("orders-section");
-      const tabCatalog = document.getElementById("nav-tab-catalog");
-      const tabOrders = document.getElementById("nav-tab-orders");
+      const myOrdersSec = document.getElementById("my-orders-section");
+
+      const activeTabClass = "px-4 py-2 rounded-full text-xs sm:text-sm font-brand font-bold transition-all duration-200 bg-white text-pastel-deep shadow-sm flex items-center gap-1.5";
+      const inactiveTabClass = "px-4 py-2 rounded-full text-xs sm:text-sm font-brand font-bold transition-all duration-200 text-pastel-berry hover:text-pastel-deep flex items-center gap-1.5";
+
+      catalogSec.classList.add("hidden");
+      ordersSec.classList.add("hidden");
+      myOrdersSec.classList.add("hidden");
 
       if (section === "catalog") {
         catalogSec.classList.remove("hidden");
-        ordersSec.classList.add("hidden");
-        tabCatalog.className = "px-4 py-2 rounded-full text-xs sm:text-sm font-brand font-bold transition-all duration-200 bg-white text-pastel-deep shadow-sm flex items-center gap-1.5";
-        tabOrders.className = "px-4 py-2 rounded-full text-xs sm:text-sm font-brand font-bold transition-all duration-200 text-pastel-berry hover:text-pastel-deep flex items-center gap-1.5";
-      } else {
-        catalogSec.classList.add("hidden");
+        document.getElementById("nav-tab-catalog").className = activeTabClass;
+        document.getElementById("nav-tab-orders").className = inactiveTabClass;
+        document.getElementById("visitor-tab-catalog").className = activeTabClass;
+        document.getElementById("visitor-tab-my-orders").className = inactiveTabClass;
+      } else if (section === "orders") {
         ordersSec.classList.remove("hidden");
-        tabOrders.className = "px-4 py-2 rounded-full text-xs sm:text-sm font-brand font-bold transition-all duration-200 bg-white text-pastel-deep shadow-sm flex items-center gap-1.5";
-        tabCatalog.className = "px-4 py-2 rounded-full text-xs sm:text-sm font-brand font-bold transition-all duration-200 text-pastel-berry hover:text-pastel-deep flex items-center gap-1.5";
+        document.getElementById("nav-tab-orders").className = activeTabClass;
+        document.getElementById("nav-tab-catalog").className = inactiveTabClass;
         renderOrdersView();
+      } else if (section === "my-orders") {
+        myOrdersSec.classList.remove("hidden");
+        document.getElementById("visitor-tab-my-orders").className = activeTabClass;
+        document.getElementById("visitor-tab-catalog").className = inactiveTabClass;
+        renderVisitorOrdersView();
       }
-    }
-
-    function mapFirebaseAuthError(code) {
-      const errors = {
-        "auth/invalid-email": "El formato del correo electrónico no es válido.",
-        "auth/user-not-found": "No existe una cuenta registrada con este correo.",
-        "auth/wrong-password": "La contraseña ingresada es incorrecta.",
-        "auth/invalid-credential": "Correo o contraseña incorrectos.",
-        "auth/email-already-in-use": "Este correo ya está registrado.",
-        "auth/weak-password": "La contraseña debe tener al menos 6 caracteres."
-      };
-      return errors[code] || "Error de autenticación (" + (code || "desconocido") + ").";
     }
 
     function getLocalUsers() {
@@ -1748,7 +1645,7 @@
     }
 
     // -------------------------------------------------------------------------
-    // GESTIÓN DEL CATÁLOGO DE GELES (0 PRODUCTOS INICIALES)
+    // GESTIÓN DEL CATÁLOGO DE GELES (0 PRODUCTOS INICIALES + FIRESTORE)
     // -------------------------------------------------------------------------
     function loadLocalGels() {
       try {
@@ -1760,12 +1657,14 @@
       renderGelsGrid();
     }
 
-    function saveLocalGels() {
+    function saveLocalGels(silent = false) {
       try {
         localStorage.setItem(STORAGE_KEYS.LOCAL_GELS, JSON.stringify(gelsCatalog));
         return true;
       } catch {
-        showToast("Memoria local llena. Usa una imagen más ligera o URL externa.");
+        if (!silent) {
+          showToast("Memoria local llena. Usa una imagen más ligera o URL externa.");
+        }
         return false;
       }
     }
@@ -1859,7 +1758,8 @@
         if (!currentSearchQuery) return true;
         return (
           (gel.name || "").toLowerCase().includes(currentSearchQuery) ||
-          (gel.aroma || "").toLowerCase().includes(currentSearchQuery)
+          (gel.aroma || "").toLowerCase().includes(currentSearchQuery) ||
+          (gel.ingredients || "").toLowerCase().includes(currentSearchQuery)
         );
       });
 
@@ -1988,7 +1888,7 @@
         .map((s) => s.trim())
         .filter(Boolean);
 
-      if (parts.length > 1) {
+      if (parts.length > 0) {
         ingredientsContainer.innerHTML = `
           <div class="flex flex-wrap gap-1.5">
             ${parts
@@ -2008,7 +1908,6 @@
 
       document.getElementById("detail-image-container").innerHTML = renderProductVisualHTML(gel.image, gel.name);
 
-      // Configurar zona inferior según si es Visitante o Dueño
       const visitorOrderBox = document.getElementById("visitor-order-box");
       const ownerDetailActions = document.getElementById("owner-detail-actions");
       const orderSuccessBanner = document.getElementById("order-success-banner");
@@ -2019,10 +1918,14 @@
         visitorOrderBox.classList.add("hidden");
         ownerDetailActions.classList.remove("hidden");
 
-        const editBtn = document.getElementById("detail-edit-btn");
-        editBtn.onclick = () => {
+        document.getElementById("detail-edit-btn").onclick = () => {
           closeDetailModal();
           openFormModal(gel.id);
+        };
+
+        document.getElementById("detail-delete-btn").onclick = () => {
+          closeDetailModal();
+          requestDeleteGel(gel.id);
         };
       } else {
         ownerDetailActions.classList.add("hidden");
@@ -2047,7 +1950,7 @@
     }
 
     // -------------------------------------------------------------------------
-    // ENVÍO Y GESTIÓN DE PEDIDOS (VISITANTE -> DUEÑO)
+    // ENVÍO Y GESTIÓN DE PEDIDOS (VISITANTE -> DUEÑO EN FIRESTORE)
     // -------------------------------------------------------------------------
     async function handlePlaceOrder(event) {
       event.preventDefault();
@@ -2055,50 +1958,53 @@
 
       const quantity = Math.max(1, parseInt(document.getElementById("order-quantity").value, 10) || 1);
       const note = document.getElementById("order-note").value.trim();
-      const submitBtn = document.getElementById("submit-order-btn");
-
-      const now = new Date();
-      const dateFormatted = now.toLocaleString("es-MX", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-      });
-
-      const orderPayload = {
-        gelId: activeDetailGel.id,
-        gelName: activeDetailGel.name,
-        gelAroma: activeDetailGel.aroma,
-        gelPrice: activeDetailGel.price,
-        gelImage: activeDetailGel.image || "default:bottle",
-        quantity,
-        note,
-        customerName: currentUser.name,
-        customerEmail: currentUser.email,
-        customerId: currentUser.uid || "visitante",
-        status: "pendiente",
-        createdAt: Date.now(),
-        dateFormatted
-      };
+      const submitBtn = document.getElementById("place-order-btn");
 
       submitBtn.disabled = true;
-      submitBtn.innerHTML = `<span>Enviando pedido...</span>`;
+      submitBtn.textContent = "Enviando solicitud...";
 
       try {
-        if (isFirebaseActive && db) {
-          await addDoc(collection(db, "pocketbac_pedidos"), orderPayload);
+        const now = new Date();
+        const dateFormatted = now.toLocaleString("es-MX", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+
+        const baseOrder = {
+          gelId: activeDetailGel.id,
+          gelName: activeDetailGel.name,
+          gelAroma: activeDetailGel.aroma,
+          gelPrice: activeDetailGel.price,
+          gelImage: activeDetailGel.image || "default:bottle",
+          quantity,
+          note,
+          customerName: currentUser.name,
+          customerEmail: currentUser.email,
+          customerId: currentUser.uid || "visitante",
+          status: "pendiente",
+          createdAtMs: Date.now(),
+          dateFormatted
+        };
+
+        if (useFirestore && db) {
+          await addDoc(collection(db, COLLECTIONS.ORDERS), {
+            ...baseOrder,
+            createdAt: serverTimestamp()
+          });
         } else {
           ordersList.unshift({
             id: "order-" + Date.now(),
-            ...orderPayload
+            ...baseOrder
           });
           saveLocalOrders();
-          updatePendingOrdersCounter();
+          updateOrdersCounters();
           renderOrdersView();
+          renderVisitorOrdersView();
         }
 
-        // Mostrar confirmación visual clara dentro del modal y Toast
         document.getElementById("order-confirmed-user").textContent = `${currentUser.name} (${currentUser.email})`;
         document.getElementById("order-success-banner").classList.remove("hidden");
         document.getElementById("visitor-order-form").reset();
@@ -2106,11 +2012,11 @@
 
         showToast(`¡Pedido de "${activeDetailGel.name}" enviado al dueño!`);
       } catch (err) {
-        console.error("Error al enviar pedido:", err);
-        showToast("No se pudo enviar el pedido. Revisa la conexión o permisos de Firestore.");
+        console.error("Error enviando pedido:", err);
+        showToast("No se pudo enviar el pedido. Intenta de nuevo.");
       } finally {
         submitBtn.disabled = false;
-        submitBtn.innerHTML = `<span>✨ Pedir este Gel</span>`;
+        submitBtn.textContent = "✨ Pedir este Gel";
       }
     }
 
@@ -2121,8 +2027,9 @@
       } catch {
         ordersList = [];
       }
-      updatePendingOrdersCounter();
+      updateOrdersCounters();
       renderOrdersView();
+      renderVisitorOrdersView();
     }
 
     function saveLocalOrders() {
@@ -2131,11 +2038,21 @@
       } catch (e) {}
     }
 
-    function updatePendingOrdersCounter() {
+    function updateOrdersCounters() {
       const pendingCount = ordersList.filter((o) => o.status === "pendiente").length;
-      const badge = document.getElementById("pending-orders-badge");
-      if (badge) {
-        badge.textContent = pendingCount;
+      const ownerBadge = document.getElementById("pending-orders-badge");
+      if (ownerBadge) {
+        ownerBadge.textContent = pendingCount;
+      }
+
+      if (currentUser && currentUser.role === "visitante") {
+        const myOrdersCount = ordersList.filter(
+          (o) => o.customerEmail === currentUser.email || o.customerId === currentUser.uid
+        ).length;
+        const visitorBadge = document.getElementById("visitor-orders-badge");
+        if (visitorBadge) {
+          visitorBadge.textContent = myOrdersCount;
+        }
       }
     }
 
@@ -2302,34 +2219,106 @@
         .join("");
     }
 
+    function renderVisitorOrdersView() {
+      if (!currentUser || currentUser.role !== "visitante") return;
+
+      const listContainer = document.getElementById("my-orders-list");
+      const emptyState = document.getElementById("empty-my-orders-state");
+
+      const myOrders = ordersList.filter(
+        (o) => o.customerEmail === currentUser.email || o.customerId === currentUser.uid
+      );
+
+      if (myOrders.length === 0) {
+        listContainer.innerHTML = "";
+        emptyState.classList.remove("hidden");
+        return;
+      }
+
+      emptyState.classList.add("hidden");
+
+      listContainer.innerHTML = myOrders
+        .map((order) => {
+          const isPending = order.status === "pendiente";
+          return `
+            <article class="bg-white rounded-3xl border-2 border-pastel-soft shadow-card p-5 sm:p-6 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between gap-2 pb-3.5 border-b border-pastel-blush">
+                  <span class="text-xs font-semibold text-pastel-berry">
+                    📅 ${escapeHTML(order.dateFormatted || "")}
+                  </span>
+                  <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${
+                    isPending
+                      ? "bg-pastel-soft text-pastel-deep border border-pastel-rose"
+                      : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                  }">
+                    <span>${isPending ? "⏳ Pendiente de revisión" : "✅ Pedido Atendido"}</span>
+                  </span>
+                </div>
+
+                <div class="mt-4 flex items-center gap-4 bg-pastel-blush/70 p-3.5 rounded-2xl border border-pastel-soft">
+                  <div class="w-16 h-16 rounded-xl bg-white p-1.5 border border-pastel-soft shrink-0 flex items-center justify-center overflow-hidden">
+                    ${renderProductVisualHTML(order.gelImage, order.gelName)}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between gap-2">
+                      <h4 class="font-brand font-bold text-base text-pastel-deep truncate">
+                        ${escapeHTML(order.gelName)}
+                      </h4>
+                      <span class="px-2.5 py-0.5 rounded-full bg-white border border-pastel-rose font-brand font-bold text-xs text-pastel-deep shrink-0">
+                        Cant: ${escapeHTML(String(order.quantity || 1))}
+                      </span>
+                    </div>
+                    <p class="text-xs text-pastel-berry truncate mt-0.5">
+                      Aroma: ${escapeHTML(order.gelAroma)}
+                    </p>
+                    <p class="text-xs font-bold text-pastel-deep mt-1">
+                      Precio orientativo: ${escapeHTML(formatCurrencyPrice(order.gelPrice))}
+                    </p>
+                  </div>
+                </div>
+
+                ${
+                  order.note
+                    ? `
+                  <div class="mt-3 p-3 rounded-2xl bg-pastel-blush border border-pastel-rose text-xs text-pastel-ink">
+                    <span class="font-bold text-pastel-berry uppercase tracking-wider text-[10px] block mb-0.5">
+                      Tu nota enviada:
+                    </span>
+                    "${escapeHTML(order.note)}"
+                  </div>
+                `
+                    : ""
+                }
+              </div>
+            </article>
+          `;
+        })
+        .join("");
+    }
+
     async function toggleOrderStatus(orderId) {
       const order = ordersList.find((o) => o.id === orderId);
       if (!order) return;
 
       const nextStatus = order.status === "pendiente" ? "atendido" : "pendiente";
 
-      if (isFirebaseActive && db) {
+      if (useFirestore && db) {
         try {
-          await updateDoc(doc(db, "pocketbac_pedidos", orderId), {
-            status: nextStatus
-          });
-          showToast(
-            nextStatus === "atendido"
-              ? "Pedido marcado como atendido"
-              : "Pedido devuelto a pendientes"
-          );
+          await updateDoc(doc(db, COLLECTIONS.ORDERS, orderId), { status: nextStatus });
         } catch (err) {
-          console.error("Error actualizando pedido en Firestore:", err);
-          showToast("No se pudo actualizar el estado del pedido.");
+          console.error("Error actualizando pedido:", err);
+          showToast("No se pudo actualizar el estado del pedido");
+          return;
         }
-        return;
+      } else {
+        order.status = nextStatus;
+        saveLocalOrders();
+        updateOrdersCounters();
+        renderOrdersView();
+        renderVisitorOrdersView();
       }
 
-      // Modo Local
-      order.status = nextStatus;
-      saveLocalOrders();
-      updatePendingOrdersCounter();
-      renderOrdersView();
       showToast(
         nextStatus === "atendido"
           ? "Pedido marcado como atendido"
@@ -2345,27 +2334,28 @@
         "¿Eliminar este pedido?",
         `Se eliminará la solicitud de "${order.gelName}" hecha por ${order.customerName}.`,
         async () => {
-          if (isFirebaseActive && db) {
+          if (useFirestore && db) {
             try {
-              await deleteDoc(doc(db, "pocketbac_pedidos", orderId));
-              showToast("Pedido eliminado");
+              await deleteDoc(doc(db, COLLECTIONS.ORDERS, orderId));
             } catch (err) {
               console.error("Error eliminando pedido:", err);
-              showToast("No se pudo eliminar el pedido.");
+              showToast("No se pudo eliminar el pedido");
+              return;
             }
           } else {
             ordersList = ordersList.filter((o) => o.id !== orderId);
             saveLocalOrders();
-            updatePendingOrdersCounter();
+            updateOrdersCounters();
             renderOrdersView();
-            showToast("Pedido eliminado");
+            renderVisitorOrdersView();
           }
+          showToast("Pedido eliminado");
         }
       );
     }
 
     // -------------------------------------------------------------------------
-    // MODAL DE CREACIÓN / EDICIÓN DE GELES (SOLO DUEÑO)
+    // MODAL DE CREACIÓN / EDICIÓN DE GELES (SOLO DUEÑO + COMPRESIÓN < 150 KB)
     // -------------------------------------------------------------------------
     function openFormModal(gelId = null) {
       if (currentUser?.role !== "dueno") return;
@@ -2435,27 +2425,41 @@
       reader.onload = function (e) {
         const img = new Image();
         img.onload = function () {
-          const maxDim = 600;
-          let width = img.width;
-          let height = img.height;
+          // Compresión en canvas a máx. 600px JPEG 0.8 (< 150 KB para Firestore)
+          let maxDim = 600;
+          let quality = 0.8;
+          let dataUrl = "";
 
-          if (width > maxDim || height > maxDim) {
-            if (width > height) {
-              height = Math.round((height * maxDim) / width);
-              width = maxDim;
-            } else {
-              width = Math.round((width * maxDim) / height);
-              height = maxDim;
+          do {
+            let width = img.width;
+            let height = img.height;
+
+            if (width > maxDim || height > maxDim) {
+              if (width > height) {
+                height = Math.round((height * maxDim) / width);
+                width = maxDim;
+              } else {
+                width = Math.round((width * maxDim) / height);
+                height = maxDim;
+              }
             }
-          }
 
-          const canvas = document.createElement("canvas");
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0, width, height);
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
 
-          currentDraftImage = canvas.toDataURL("image/webp", 0.85);
+            // Fondo blanco para imágenes PNG con transparencia antes de exportar a JPEG
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fillRect(0, 0, width, height);
+            ctx.drawImage(img, 0, 0, width, height);
+
+            dataUrl = canvas.toDataURL("image/jpeg", quality);
+            quality -= 0.1;
+            maxDim = Math.round(maxDim * 0.85);
+          } while (dataUrl.length > 150 * 1024 && quality >= 0.4);
+
+          currentDraftImage = dataUrl;
           updateLiveImagePreview();
         };
         img.src = e.target.result;
@@ -2484,74 +2488,68 @@
       const aroma = document.getElementById("gel-aroma").value.trim();
       const price = document.getElementById("gel-price").value.trim();
       const ingredients = document.getElementById("gel-ingredients").value.trim();
-
       const saveBtn = document.getElementById("save-gel-btn");
+
       saveBtn.disabled = true;
       saveBtn.textContent = "Guardando...";
 
       try {
-        if (isFirebaseActive && db) {
-          if (id) {
-            await updateDoc(doc(db, "pocketbac_geles", id), {
-              name,
-              aroma,
-              price,
-              ingredients,
-              image: currentDraftImage,
-              updatedAt: Date.now()
-            });
-            showToast(`"${name}" actualizado en Firebase`);
-          } else {
-            await addDoc(collection(db, "pocketbac_geles"), {
-              name,
-              aroma,
-              price,
-              ingredients,
-              image: currentDraftImage,
-              createdAt: Date.now()
-            });
-            showToast(`"${name}" guardado en Firebase`);
-          }
-          closeFormModal();
-          return;
-        }
-
-        // Modo Local
         if (id) {
-          const idx = gelsCatalog.findIndex((g) => g.id === id);
-          if (idx !== -1) {
-            gelsCatalog[idx] = {
-              ...gelsCatalog[idx],
+          if (useFirestore && db) {
+            await updateDoc(doc(db, COLLECTIONS.GELS, id), {
               name,
               aroma,
               price,
               ingredients,
               image: currentDraftImage
-            };
+            });
+          } else {
+            const idx = gelsCatalog.findIndex((g) => g.id === id);
+            if (idx !== -1) {
+              gelsCatalog[idx] = {
+                ...gelsCatalog[idx],
+                name,
+                aroma,
+                price,
+                ingredients,
+                image: currentDraftImage
+              };
+            }
+            saveLocalGels();
+            renderGelsGrid();
           }
-          if (saveLocalGels()) {
-            showToast(`"${name}" actualizado`);
-          }
+          showToast(`"${name}" actualizado`);
         } else {
-          gelsCatalog.unshift({
-            id: "gel-" + Date.now(),
-            name,
-            aroma,
-            price,
-            ingredients,
-            image: currentDraftImage,
-            createdAt: Date.now()
-          });
-          if (saveLocalGels()) {
-            showToast(`"${name}" añadido a PocketBac`);
+          if (useFirestore && db) {
+            await addDoc(collection(db, COLLECTIONS.GELS), {
+              name,
+              aroma,
+              price,
+              ingredients,
+              image: currentDraftImage,
+              createdAt: serverTimestamp(),
+              createdAtMs: Date.now()
+            });
+          } else {
+            gelsCatalog.unshift({
+              id: "gel-" + Date.now(),
+              name,
+              aroma,
+              price,
+              ingredients,
+              image: currentDraftImage,
+              createdAtMs: Date.now()
+            });
+            saveLocalGels();
+            renderGelsGrid();
           }
+          showToast(`"${name}" añadido a PocketBac`);
         }
 
         closeFormModal();
-        renderGelsGrid();
       } catch (err) {
-        console.error("Error al guardar gel:", err);
-        showToast("Error al guardar el gel. Verifica permisos de Firestore.");
+        console.error("Error guardando gel:", err);
+        showToast("No se pudo guardar el gel. Verifica el tamaño de la imagen.");
       } finally {
         saveBtn.disabled = false;
         saveBtn.textContent = "Guardar Gel";
@@ -2567,20 +2565,20 @@
         "¿Eliminar este gel?",
         `Se eliminará "${gel.name}" de tu catálogo PocketBac.`,
         async () => {
-          if (isFirebaseActive && db) {
+          if (useFirestore && db) {
             try {
-              await deleteDoc(doc(db, "pocketbac_geles", gelId));
-              showToast("Gel eliminado de Firebase");
+              await deleteDoc(doc(db, COLLECTIONS.GELS, gelId));
             } catch (err) {
               console.error("Error eliminando gel:", err);
-              showToast("No se pudo eliminar el gel.");
+              showToast("No se pudo eliminar el gel");
+              return;
             }
           } else {
             gelsCatalog = gelsCatalog.filter((g) => g.id !== gelId);
             saveLocalGels();
             renderGelsGrid();
-            showToast("Gel eliminado del catálogo");
           }
+          showToast("Gel eliminado del catálogo");
         }
       );
     }
@@ -2610,55 +2608,6 @@
     }
 
     // -------------------------------------------------------------------------
-    // MODAL CONFIGURAR FIREBASE
-    // -------------------------------------------------------------------------
-    function openFirebaseModal() {
-      const active = resolveActiveFirebaseConfig() || DEFAULT_FIREBASE_CONFIG;
-      document.getElementById("fb-apiKey").value = active.apiKey !== "TU_API_KEY" ? active.apiKey : "";
-      document.getElementById("fb-authDomain").value = active.authDomain !== "TU_PROYECTO.firebaseapp.com" ? active.authDomain : "";
-      document.getElementById("fb-projectId").value = active.projectId !== "TU_PROJECT_ID" ? active.projectId : "";
-      document.getElementById("fb-storageBucket").value = active.storageBucket !== "TU_PROYECTO.appspot.com" ? active.storageBucket : "";
-      document.getElementById("fb-messagingSenderId").value = active.messagingSenderId !== "TU_MESSAGING_SENDER_ID" ? active.messagingSenderId : "";
-      document.getElementById("fb-appId").value = active.appId !== "TU_APP_ID" ? active.appId : "";
-      document.getElementById("firebase-modal").classList.remove("hidden");
-    }
-
-    function closeFirebaseModal() {
-      document.getElementById("firebase-modal").classList.add("hidden");
-    }
-
-    async function handleSaveFirebaseConfig(event) {
-      event.preventDefault();
-      const customConfig = {
-        apiKey: document.getElementById("fb-apiKey").value.trim(),
-        authDomain: document.getElementById("fb-authDomain").value.trim(),
-        projectId: document.getElementById("fb-projectId").value.trim(),
-        storageBucket: document.getElementById("fb-storageBucket").value.trim(),
-        messagingSenderId: document.getElementById("fb-messagingSenderId").value.trim(),
-        appId: document.getElementById("fb-appId").value.trim()
-      };
-
-      try {
-        localStorage.setItem(STORAGE_KEYS.FIREBASE_CONFIG, JSON.stringify(customConfig));
-      } catch (e) {}
-
-      closeFirebaseModal();
-      await initBackend();
-      if (isFirebaseActive) {
-        showToast("¡Conectado a Firebase Cloud!");
-      }
-    }
-
-    async function resetFirebaseToLocal() {
-      try {
-        localStorage.removeItem(STORAGE_KEYS.FIREBASE_CONFIG);
-      } catch (e) {}
-      closeFirebaseModal();
-      await initBackend();
-      showToast("Modo Local activo");
-    }
-
-    // -------------------------------------------------------------------------
     // UTILIDADES GENERALES (BACKDROP, ESCAPE, TOAST)
     // -------------------------------------------------------------------------
     function handleBackdropClick(event, modalId) {
@@ -2681,7 +2630,7 @@
       }, 3300);
     }
 
-    // Exponer funciones al ámbito global window
+    // Exponer funciones al ámbito global para los manejadores del DOM
     Object.assign(window, {
       switchAuthTab,
       updateRoleSelectorStyles,
@@ -2689,7 +2638,7 @@
       handleRegister,
       quickEnter,
       handleLogout,
-      switchOwnerSection,
+      switchSection,
       handleSearch,
       clearSearch,
       openDetailModal,
@@ -2707,10 +2656,6 @@
       handleSaveGel,
       requestDeleteGel,
       closeConfirmModal,
-      openFirebaseModal,
-      closeFirebaseModal,
-      handleSaveFirebaseConfig,
-      resetFirebaseToLocal,
       handleBackdropClick
     });
 
@@ -2719,13 +2664,12 @@
       if (e.key === "Escape") {
         closeDetailModal();
         closeFormModal();
-        closeFirebaseModal();
         closeConfirmModal();
       }
     });
 
-    // Inicializar aplicación al cargar
-    initBackend();
+    // Inicializar aplicación y conexión automática a Cloud Firestore al cargar
+    initApp();
   </script>
 </body>
 </html>
